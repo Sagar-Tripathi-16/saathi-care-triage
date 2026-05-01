@@ -52,7 +52,7 @@ export function normalize(input: PatientInput): PatientInput {
 
   // numeric coercions
   for (const k of ["age", "temperature", "spo2", "hemoglobin", "respiratory_rate", "pregnancy_weeks", "fever_duration_days"] as const) {
-    const v = out[k];
+    const v = (out as Record<string, unknown>)[k];
     if (v !== undefined && v !== null && v !== "") {
       const n = typeof v === "number" ? v : parseFloat(String(v));
       if (!Number.isNaN(n)) (out as Record<string, unknown>)[k] = n;

@@ -46,22 +46,13 @@ function getDB() {
   if (typeof window === "undefined") return null;
   if (!dbPromise) {
     dbPromise = openDB("arogya-saathi", 2, {
-      upgrade(db, oldVersion) {
+      upgrade(db) {
         if (!db.objectStoreNames.contains("assessments")) {
           const store = db.createObjectStore("assessments", { keyPath: "id", autoIncrement: true });
           store.createIndex("created_at", "created_at");
           store.createIndex("severity", "severity");
         }
-        if (oldVersion < 2) {
-          // Additive: no schema change beyond optional fields. Index for due dates.
-          const tx = (db as unknown as { transaction: IDBPDatabase["transaction"] }).transaction;
-          // Use the upgrade transaction to add an index if missing
-          // (idb provides this on the same db object)
-          const store = (db as IDBPDatabase).transaction.objectStoreNames
-            ? null
-            : null;
-          void tx; void store;
-        }
+        // v2: additive optional fields only — no schema migration required.
       },
     });
   }

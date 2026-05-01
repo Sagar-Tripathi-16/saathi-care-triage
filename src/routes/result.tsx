@@ -6,7 +6,8 @@ import { t } from "@/i18n/dict";
 import { severityClasses, severityLabel } from "@/lib/severity";
 import { simplifyExplanation } from "@/server/ai.functions";
 import { loadAllRules } from "@/engine/rules";
-import { listAssessments, updateAssessment, type SimplifiedAI } from "@/storage/db";
+import { listAssessments, updateAssessment, type SimplifiedAI, type AssessmentRecord } from "@/storage/db";
+import { FollowUpPlanner } from "@/components/FollowUpPlanner";
 import {
   Sparkles,
   AlertTriangle,
@@ -16,6 +17,7 @@ import {
   ShieldAlert,
   Stethoscope,
   ArrowRight,
+  HeartPulse,
 } from "lucide-react";
 import {
   Accordion,
@@ -37,6 +39,7 @@ export const Route = createFileRoute("/result")({
 function ResultPage() {
   const lang = useApp((s) => s.lang);
   const result = useApp((s) => s.lastResult);
+  const lastRecordId = useApp((s) => s.lastRecordId);
   const online = useApp((s) => s.online);
   const navigate = useNavigate();
 
@@ -44,6 +47,7 @@ function ResultPage() {
   const [simplified, setSimplified] = useState<SimplifiedAI | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiSaved, setAiSaved] = useState(false);
+  const [record, setRecord] = useState<AssessmentRecord | null>(null);
 
   const rulesById = useMemo(() => {
     const map = new Map<string, ReturnType<typeof loadAllRules>[number]>();
@@ -55,11 +59,28 @@ function ResultPage() {
     if (!result) navigate({ to: "/" });
   }, [result, navigate]);
 
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      if (!result) return;
+      const all = await listAssessments();
+      const match =
+        (lastRecordId != null ? all.find((a) => a.id === lastRecordId) : undefined) ??
+        all.find((a) => a.result?.timestamp === result.timestamp);
+      if (!cancel) setRecord(match ?? null);
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [result, lastRecordId]);
+
   if (!result) return null;
 
   const sev = severityClasses(result.triage);
   const isEmergency = result.triage === "Emergency";
   const isOverride = !!result.override_triggered && (result.override_rule_ids?.length ?? 0) > 0;
+  const highRisk = result.high_risk_pregnancy;
+  const isHighRisk = !!highRisk?.flagged;
 
   async function onSimplify() {
     if (!result) return;
@@ -140,7 +161,35 @@ function ResultPage() {
           </div>
         )}
 
-        {/* Validation warnings */}
+        {/* High-risk pregnancy banner */}
+        {isHighRisk && (
+          <div className="rounded-xl border-2 border-severity-emergency/60 bg-severity-emergency-soft p-4 animate-fade-in">
+            <div className="flex items-start gap-2.5">
+              <HeartPulse className="size-6 text-severity-emergency shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-base font-bold text-severity-emergency tracking-wide">
+                  {t(lang, "high_risk_pregnancy")}
+                </div>
+                <div className="text-sm font-medium text-foreground mt-1">
+                  {t(lang, "maternal_risk_warning")}
+                </div>
+                <ul className="mt-2 space-y-1 text-sm text-foreground">
+                  {(highRisk?.reasons ?? []).map((rk) => (
+                    <li key={rk} className="flex gap-2">
+                      <span className="size-1.5 rounded-full bg-severity-emergency shrink-0 mt-2" />
+                      <span>{t(lang, rk as Parameters<typeof t>[1])}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-3 rounded-lg bg-card/60 border border-border px-3 py-2 text-sm text-foreground flex items-start gap-2">
+                  <ArrowRight className="size-4 text-severity-emergency shrink-0 mt-0.5" />
+                  <span>{t(lang, "maternal_risk_action")}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {result.validation_issues.filter((i) => i.level === "warning").length > 0 && (
           <div className="rounded-xl border border-severity-phc/40 bg-severity-phc-soft text-severity-phc-foreground p-3 text-sm">
             <div className="flex items-center gap-2 font-medium mb-1">
@@ -260,6 +309,14 @@ function ResultPage() {
             </div>
           )}
         </section>
+
+        {/* Follow-up planner */}
+        <FollowUpPlanner
+          recordId={record?.id ?? lastRecordId}
+          severity={result.triage}
+          highRisk={isHighRisk}
+          existing={record?.follow_up}
+        />
 
         {/* Triggered rules */}
         {result.triggered_rules.length > 0 && (

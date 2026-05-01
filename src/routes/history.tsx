@@ -4,10 +4,30 @@ import { AppShell } from "@/components/AppShell";
 import { useApp } from "@/store/app";
 import { t } from "@/i18n/dict";
 import { severityClasses, severityLabel } from "@/lib/severity";
-import { clearAssessments, listAssessments, type AssessmentRecord } from "@/storage/db";
+import {
+  clearAssessments,
+  listAssessments,
+  matchPatientHistory,
+  markFollowUpComplete,
+  type AssessmentRecord,
+} from "@/storage/db";
 import { loadAllRules } from "@/engine/rules";
+import { SEVERITY_LEVEL } from "@/engine/classifier";
 import type { Severity } from "@/engine/types";
-import { Trash2, ChevronDown, AlertTriangle, RotateCcw, Activity } from "lucide-react";
+import {
+  Trash2,
+  ChevronDown,
+  AlertTriangle,
+  RotateCcw,
+  Activity,
+  Calendar,
+  HeartPulse,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  CheckCircle2,
+  Play,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -28,6 +48,7 @@ export const Route = createFileRoute("/history")({
 function HistoryPage() {
   const lang = useApp((s) => s.lang);
   const setLast = useApp((s) => s.setLast);
+  const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
   const [items, setItems] = useState<AssessmentRecord[]>([]);
 
@@ -45,6 +66,30 @@ function HistoryPage() {
     refresh();
   }, []);
 
+  // Compute trend (vs prior assessment for the same patient) for each item
+  const trends = useMemo(() => {
+    const map = new Map<number, { prev: AssessmentRecord; delta: number } | null>();
+    for (const it of items) {
+      if (it.id == null) continue;
+      const prior = matchPatientHistory(items, it.patient_name, it.age, it.created_at);
+      const prev = prior[0]; // already newest-first
+      if (!prev) {
+        map.set(it.id, null);
+        continue;
+      }
+      const curLevel = SEVERITY_LEVEL[it.severity as Severity] ?? 0;
+      const prevLevel = SEVERITY_LEVEL[prev.severity as Severity] ?? 0;
+      map.set(it.id, { prev, delta: curLevel - prevLevel });
+    }
+    return map;
+  }, [items]);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }, []);
+
   async function onClear() {
     if (typeof window !== "undefined" && !window.confirm(t(lang, "confirm_clear"))) return;
     await clearAssessments();
@@ -52,8 +97,19 @@ function HistoryPage() {
   }
 
   function onReopen(rec: AssessmentRecord) {
-    setLast(rec.input, rec.result);
+    setLast(rec.input, rec.result, rec.id ?? null);
     navigate({ to: "/result" });
+  }
+
+  async function onMarkComplete(rec: AssessmentRecord) {
+    if (rec.id == null) return;
+    await markFollowUpComplete(rec.id);
+    refresh();
+  }
+
+  function onStartRevisit(rec: AssessmentRecord) {
+    if (rec.id != null) setPendingPreviousId(rec.id);
+    navigate({ to: "/" });
   }
 
   return (
@@ -89,6 +145,17 @@ function HistoryPage() {
             const isOverride =
               !!it.result?.override_triggered ||
               it.triggered_rules.some((id) => overrideIds.has(id));
+            const isHR = !!it.high_risk_pregnancy?.flagged;
+            const trend = it.id != null ? trends.get(it.id) : null;
+            const fu = it.follow_up;
+            const fuPending = !!fu && !it.follow_up_completed_at;
+            const fuDueLabel: { label: string; tone: "overdue" | "today" | "scheduled" } | null = (() => {
+              if (!fuPending || !fu) return null;
+              const dueDay = (() => { const d = new Date(fu.due_date); d.setHours(0,0,0,0); return d.getTime(); })();
+              if (dueDay < today) return { label: t(lang, "follow_up_overdue"), tone: "overdue" };
+              if (dueDay === today) return { label: t(lang, "follow_up_today"), tone: "today" };
+              return { label: t(lang, "follow_up_due"), tone: "scheduled" };
+            })();
 
             const vitals: Array<[string, string]> = [];
             const inp = it.input;
@@ -112,6 +179,49 @@ function HistoryPage() {
                     {isOverride && (
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
                         <AlertTriangle className="size-3" /> {t(lang, "override_badge")}
+                      </span>
+                    )}
+                    {isHR && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
+                        <HeartPulse className="size-3" /> {t(lang, "high_risk_pregnancy")}
+                      </span>
+                    )}
+                    {fuDueLabel && (
+                      <span
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${
+                          fuDueLabel.tone === "overdue"
+                            ? "bg-severity-emergency-soft text-severity-emergency"
+                            : fuDueLabel.tone === "today"
+                              ? "bg-severity-phc-soft text-severity-phc-foreground"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Calendar className="size-3" /> {fuDueLabel.label}
+                      </span>
+                    )}
+                    {trend && (
+                      <span
+                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium ${
+                          trend.delta > 0
+                            ? "bg-severity-emergency-soft text-severity-emergency"
+                            : trend.delta < 0
+                              ? "bg-severity-home-soft text-severity-home"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                        title={`${t(lang, "trend_previous")}: ${severityLabel(trend.prev.severity as Severity, lang)}`}
+                      >
+                        {trend.delta > 0 ? (
+                          <TrendingUp className="size-3" />
+                        ) : trend.delta < 0 ? (
+                          <TrendingDown className="size-3" />
+                        ) : (
+                          <Minus className="size-3" />
+                        )}
+                        {trend.delta > 0
+                          ? t(lang, "trend_escalated")
+                          : trend.delta < 0
+                            ? t(lang, "trend_deescalated")
+                            : t(lang, "trend_stable")}
                       </span>
                     )}
                     <div className="flex-1 min-w-0">
@@ -210,12 +320,66 @@ function HistoryPage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2 pt-1">
+                    {trend && (
+                      <div className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                        <span className="font-medium">{t(lang, "trend_previous")}:</span>{" "}
+                        {severityLabel(trend.prev.severity as Severity, lang)}
+                        <span className="mx-1.5">·</span>
+                        <span className="font-medium">{t(lang, "trend_current")}:</span>{" "}
+                        {severityLabel(it.severity as Severity, lang)}
+                      </div>
+                    )}
+
+                    {fu && (
+                      <div
+                        className={`rounded-lg border p-3 ${
+                          it.follow_up_completed_at
+                            ? "border-border bg-muted/30"
+                            : "border-severity-phc/40 bg-severity-phc-soft/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide font-medium text-muted-foreground mb-1">
+                          <Calendar className="size-3" /> {t(lang, "follow_up")}
+                          {it.follow_up_completed_at && (
+                            <span className="ml-auto inline-flex items-center gap-1 normal-case text-severity-home">
+                              <CheckCircle2 className="size-3" /> {t(lang, "follow_up_completed")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-foreground">
+                          <span className="font-medium">{new Date(fu.due_date).toLocaleDateString()}</span>
+                          {" · "}
+                          {t(lang, fu.revisit_reason as Parameters<typeof t>[1])}
+                        </div>
+                        {fu.notes && (
+                          <p className="text-muted-foreground mt-1 text-xs">{fu.notes}</p>
+                        )}
+                        {!it.follow_up_completed_at && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              type="button"
+                              onClick={() => onMarkComplete(it)}
+                              className="text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-card text-foreground min-h-[36px]"
+                            >
+                              <CheckCircle2 className="size-3.5" /> {t(lang, "mark_complete")}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 pt-1">
                       <button
                         onClick={() => onReopen(it)}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium min-h-[44px]"
                       >
                         <RotateCcw className="size-4" /> {t(lang, "reopen_assessment")}
+                      </button>
+                      <button
+                        onClick={() => onStartRevisit(it)}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium min-h-[44px]"
+                      >
+                        <Play className="size-4" /> {t(lang, "start_revisit")}
                       </button>
                     </div>
                   </div>

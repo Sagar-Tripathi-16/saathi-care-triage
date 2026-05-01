@@ -5,7 +5,8 @@ import { useApp } from "@/store/app";
 import { t } from "@/i18n/dict";
 import { runTriage } from "@/engine";
 import type { PatientInput } from "@/engine/types";
-import { saveAssessment } from "@/storage/db";
+import { saveAssessment, listAssessments, matchPatientHistory, linkRevisit } from "@/storage/db";
+import { computeHighRiskPregnancy } from "@/engine/maternalRisk";
 import { AlertTriangle, ChevronDown, ChevronUp, ShieldAlert, Activity, Baby } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -58,6 +59,8 @@ function symptomLabel(s: SymptomDef, lang: string) {
 function IndexPage() {
   const lang = useApp((s) => s.lang);
   const setLast = useApp((s) => s.setLast);
+  const pendingPreviousId = useApp((s) => s.pendingPreviousId);
+  const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -133,9 +136,17 @@ function IndexPage() {
       return;
     }
 
-    setLast(input, out.result);
+    // Post-engine advisory: high-risk pregnancy flag (does NOT alter triage)
+    let highRisk;
+    try {
+      const all = await listAssessments();
+      const prior = matchPatientHistory(all, input.patient_name, input.age, Date.now());
+      highRisk = computeHighRiskPregnancy(input, out.result, prior);
+    } catch {
+      highRisk = computeHighRiskPregnancy(input, out.result, []);
+    }
 
-    await saveAssessment({
+    const newId = await saveAssessment({
       patient_name: name.trim() || "—",
       age: input.age,
       pregnant,
@@ -146,7 +157,18 @@ function IndexPage() {
       input,
       result: out.result,
       created_at: Date.now(),
+      high_risk_pregnancy: highRisk,
+      previous_assessment_id: pendingPreviousId ?? undefined,
     });
+
+    if (newId != null && pendingPreviousId != null) {
+      await linkRevisit(pendingPreviousId, newId);
+      setPendingPreviousId(null);
+    }
+
+    // Attach the new annotated result (with high-risk) so Result can show it
+    const annotatedResult = { ...out.result, high_risk_pregnancy: highRisk };
+    setLast(input, annotatedResult, newId);
 
     navigate({ to: "/result" });
   }

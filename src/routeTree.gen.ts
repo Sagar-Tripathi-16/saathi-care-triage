@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResultRouteImport } from './routes/result'
+import { Route as QueueRouteImport } from './routes/queue'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ResultRoute = ResultRouteImport.update({
   id: '/result',
   path: '/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueRoute = QueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -32,30 +38,34 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/result': typeof ResultRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/result': typeof ResultRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/history': typeof HistoryRoute
+  '/queue': typeof QueueRoute
   '/result': typeof ResultRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/history' | '/result'
+  fullPaths: '/' | '/history' | '/queue' | '/result'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/history' | '/result'
-  id: '__root__' | '/' | '/history' | '/result'
+  to: '/' | '/history' | '/queue' | '/result'
+  id: '__root__' | '/' | '/history' | '/queue' | '/result'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoryRoute: typeof HistoryRoute
+  QueueRoute: typeof QueueRoute
   ResultRoute: typeof ResultRoute
 }
 
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/result'
       fullPath: '/result'
       preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue': {
+      id: '/queue'
+      path: '/queue'
+      fullPath: '/queue'
+      preLoaderRoute: typeof QueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoryRoute: HistoryRoute,
+  QueueRoute: QueueRoute,
   ResultRoute: ResultRoute,
 }
 export const routeTree = rootRouteImport

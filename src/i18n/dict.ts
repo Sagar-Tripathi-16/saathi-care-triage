@@ -82,6 +82,45 @@ type Dict = {
   no_vitals: string;
   weeks_helper: string;
   ai_offline_notice: string;
+  // Phase 1: follow-up, high-risk pregnancy, queue
+  nav_queue: string;
+  follow_up: string;
+  follow_up_due: string;
+  follow_up_overdue: string;
+  follow_up_today: string;
+  follow_up_scheduled: string;
+  follow_up_completed: string;
+  plan_follow_up: string;
+  revisit_reason: string;
+  follow_up_notes: string;
+  save_follow_up: string;
+  mark_complete: string;
+  start_revisit: string;
+  trend_escalated: string;
+  trend_deescalated: string;
+  trend_stable: string;
+  trend_previous: string;
+  trend_current: string;
+  high_risk_pregnancy: string;
+  maternal_risk_warning: string;
+  maternal_risk_action: string;
+  risk_severe_anemia: string;
+  risk_heavy_bleeding: string;
+  risk_severe_headache: string;
+  risk_blurred_vision: string;
+  risk_severe_weakness: string;
+  risk_repeated_referrals: string;
+  queue_title: string;
+  queue_empty: string;
+  queue_filter_severity: string;
+  queue_filter_followup: string;
+  queue_filter_highrisk: string;
+  queue_all_severities: string;
+  follow_up_saved: string;
+  reason_recheck_fever: string;
+  reason_vitals_review: string;
+  reason_pregnancy_check: string;
+  reason_general: string;
 };
 
 const en: Dict = {
@@ -157,6 +196,44 @@ const en: Dict = {
   no_vitals: "No vitals recorded",
   weeks_helper: "Used for trimester-aware rules",
   ai_offline_notice: "AI simplification needs internet. The triage result is fully available offline.",
+  nav_queue: "Priority Queue",
+  follow_up: "Follow-up",
+  follow_up_due: "Follow-up due",
+  follow_up_overdue: "Overdue",
+  follow_up_today: "Due today",
+  follow_up_scheduled: "Scheduled",
+  follow_up_completed: "Completed",
+  plan_follow_up: "Plan follow-up",
+  revisit_reason: "Revisit reason",
+  follow_up_notes: "Notes (optional)",
+  save_follow_up: "Save follow-up",
+  mark_complete: "Mark complete",
+  start_revisit: "Start revisit",
+  trend_escalated: "Escalated",
+  trend_deescalated: "Improved",
+  trend_stable: "Stable",
+  trend_previous: "Previous",
+  trend_current: "Current",
+  high_risk_pregnancy: "HIGH-RISK PREGNANCY",
+  maternal_risk_warning: "Maternal risk warning",
+  maternal_risk_action: "Schedule a follow-up within 24 hours and share with PHC.",
+  risk_severe_anemia: "Severe anemia (Hb < 7 g/dL)",
+  risk_heavy_bleeding: "Heavy bleeding",
+  risk_severe_headache: "Severe headache",
+  risk_blurred_vision: "Blurred vision",
+  risk_severe_weakness: "Severe weakness",
+  risk_repeated_referrals: "Repeated PHC/Emergency referrals in the last 30 days",
+  queue_title: "Today's Priority Cases",
+  queue_empty: "No priority cases right now. Great work.",
+  queue_filter_severity: "Severity",
+  queue_filter_followup: "Pending follow-up",
+  queue_filter_highrisk: "High-risk pregnancy",
+  queue_all_severities: "All",
+  follow_up_saved: "Follow-up saved on this device.",
+  reason_recheck_fever: "Recheck fever",
+  reason_vitals_review: "Vitals review",
+  reason_pregnancy_check: "Pregnancy check",
+  reason_general: "General review",
 };
 
 const hi: Dict = {
@@ -232,6 +309,44 @@ const hi: Dict = {
   no_vitals: "कोई संकेत दर्ज नहीं",
   weeks_helper: "त्रैमासिक नियमों के लिए उपयोग",
   ai_offline_notice: "AI सरलीकरण के लिए इंटरनेट चाहिए। त्रिअज परिणाम ऑफ़लाइन भी पूरी तरह उपलब्ध है।",
+  nav_queue: "प्राथमिकता सूची",
+  follow_up: "फ़ॉलो-अप",
+  follow_up_due: "फ़ॉलो-अप देय",
+  follow_up_overdue: "देरी",
+  follow_up_today: "आज देय",
+  follow_up_scheduled: "निर्धारित",
+  follow_up_completed: "पूर्ण",
+  plan_follow_up: "फ़ॉलो-अप योजना",
+  revisit_reason: "पुनः जाँच का कारण",
+  follow_up_notes: "नोट्स (वैकल्पिक)",
+  save_follow_up: "फ़ॉलो-अप सहेजें",
+  mark_complete: "पूर्ण चिह्नित करें",
+  start_revisit: "पुनः मूल्यांकन शुरू करें",
+  trend_escalated: "बढ़ा",
+  trend_deescalated: "सुधरा",
+  trend_stable: "स्थिर",
+  trend_previous: "पिछला",
+  trend_current: "वर्तमान",
+  high_risk_pregnancy: "उच्च-जोखिम गर्भावस्था",
+  maternal_risk_warning: "मातृ जोखिम चेतावनी",
+  maternal_risk_action: "24 घंटे में फ़ॉलो-अप तय करें और PHC को सूचित करें।",
+  risk_severe_anemia: "गंभीर रक्ताल्पता (Hb < 7)",
+  risk_heavy_bleeding: "भारी रक्तस्राव",
+  risk_severe_headache: "गंभीर सिरदर्द",
+  risk_blurred_vision: "धुंधली दृष्टि",
+  risk_severe_weakness: "गंभीर कमज़ोरी",
+  risk_repeated_referrals: "30 दिनों में बार-बार PHC/आपातकाल रेफरल",
+  queue_title: "आज के प्राथमिकता मामले",
+  queue_empty: "अभी कोई प्राथमिकता मामला नहीं। बढ़िया काम।",
+  queue_filter_severity: "गंभीरता",
+  queue_filter_followup: "लंबित फ़ॉलो-अप",
+  queue_filter_highrisk: "उच्च-जोखिम गर्भावस्था",
+  queue_all_severities: "सभी",
+  follow_up_saved: "फ़ॉलो-अप इस डिवाइस पर सहेजा गया।",
+  reason_recheck_fever: "बुखार की पुनः जाँच",
+  reason_vitals_review: "महत्वपूर्ण संकेत समीक्षा",
+  reason_pregnancy_check: "गर्भावस्था जाँच",
+  reason_general: "सामान्य समीक्षा",
 };
 
 const kn: Dict = {
@@ -307,6 +422,44 @@ const kn: Dict = {
   no_vitals: "ಯಾವುದೇ ಚಿಹ್ನೆಗಳಿಲ್ಲ",
   weeks_helper: "ತ್ರೈಮಾಸಿಕ ನಿಯಮಗಳಿಗಾಗಿ ಬಳಸಲಾಗುತ್ತದೆ",
   ai_offline_notice: "AI ಸರಳೀಕರಣಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಟ್ರಯಾಜ್ ಫಲಿತಾಂಶ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿಯೂ ಸಂಪೂರ್ಣವಾಗಿ ಲಭ್ಯವಿದೆ.",
+  nav_queue: "ಆದ್ಯತೆ ಪಟ್ಟಿ",
+  follow_up: "ಫಾಲೋ-ಅಪ್",
+  follow_up_due: "ಫಾಲೋ-ಅಪ್ ಬಾಕಿ",
+  follow_up_overdue: "ಮೀರಿದೆ",
+  follow_up_today: "ಇಂದು ಬಾಕಿ",
+  follow_up_scheduled: "ನಿಗದಿಪಡಿಸಲಾಗಿದೆ",
+  follow_up_completed: "ಪೂರ್ಣಗೊಂಡಿದೆ",
+  plan_follow_up: "ಫಾಲೋ-ಅಪ್ ಯೋಜನೆ",
+  revisit_reason: "ಮರು ಭೇಟಿಯ ಕಾರಣ",
+  follow_up_notes: "ಟಿಪ್ಪಣಿ (ಐಚ್ಛಿಕ)",
+  save_follow_up: "ಫಾಲೋ-ಅಪ್ ಉಳಿಸಿ",
+  mark_complete: "ಪೂರ್ಣಗೊಂಡಿದೆ ಎಂದು ಗುರುತಿಸಿ",
+  start_revisit: "ಮರು ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ",
+  trend_escalated: "ಹೆಚ್ಚಾಗಿದೆ",
+  trend_deescalated: "ಸುಧಾರಿಸಿದೆ",
+  trend_stable: "ಸ್ಥಿರ",
+  trend_previous: "ಹಿಂದಿನದು",
+  trend_current: "ಪ್ರಸ್ತುತ",
+  high_risk_pregnancy: "ಅತಿ ಅಪಾಯದ ಗರ್ಭಧಾರಣೆ",
+  maternal_risk_warning: "ಮಾತೃ ಅಪಾಯದ ಎಚ್ಚರಿಕೆ",
+  maternal_risk_action: "24 ಗಂಟೆಗಳೊಳಗೆ ಫಾಲೋ-ಅಪ್ ನಿಗದಿಪಡಿಸಿ ಮತ್ತು PHC ಗೆ ತಿಳಿಸಿ.",
+  risk_severe_anemia: "ತೀವ್ರ ರಕ್ತಹೀನತೆ (Hb < 7)",
+  risk_heavy_bleeding: "ಭಾರೀ ರಕ್ತಸ್ರಾವ",
+  risk_severe_headache: "ತೀವ್ರ ತಲೆನೋವು",
+  risk_blurred_vision: "ಮಸುಕು ದೃಷ್ಟಿ",
+  risk_severe_weakness: "ತೀವ್ರ ದೌರ್ಬಲ್ಯ",
+  risk_repeated_referrals: "30 ದಿನಗಳಲ್ಲಿ ಪುನರಾವರ್ತಿತ PHC/ತುರ್ತು ಶಿಫಾರಸುಗಳು",
+  queue_title: "ಇಂದಿನ ಆದ್ಯತೆ ಪ್ರಕರಣಗಳು",
+  queue_empty: "ಈಗ ಯಾವುದೇ ಆದ್ಯತೆ ಪ್ರಕರಣಗಳಿಲ್ಲ. ಉತ್ತಮ ಕೆಲಸ.",
+  queue_filter_severity: "ತೀವ್ರತೆ",
+  queue_filter_followup: "ಬಾಕಿ ಫಾಲೋ-ಅಪ್",
+  queue_filter_highrisk: "ಅತಿ ಅಪಾಯದ ಗರ್ಭಧಾರಣೆ",
+  queue_all_severities: "ಎಲ್ಲಾ",
+  follow_up_saved: "ಫಾಲೋ-ಅಪ್ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
+  reason_recheck_fever: "ಜ್ವರ ಮರು ಪರಿಶೀಲನೆ",
+  reason_vitals_review: "ಪ್ರಮುಖ ಚಿಹ್ನೆಗಳ ಪರಿಶೀಲನೆ",
+  reason_pregnancy_check: "ಗರ್ಭಧಾರಣೆ ಪರಿಶೀಲನೆ",
+  reason_general: "ಸಾಮಾನ್ಯ ಪರಿಶೀಲನೆ",
 };
 
 export const DICTS: Record<Lang, Dict> = { en, hi, kn };

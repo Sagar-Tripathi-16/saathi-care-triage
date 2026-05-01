@@ -10,6 +10,8 @@ interface AppState {
   lastInput: PatientInput | null;
   setLast: (input: PatientInput, result: TriageResult) => void;
   clearLast: () => void;
+  online: boolean;
+  setOnline: (online: boolean) => void;
 }
 
 export const useApp = create<AppState>()(
@@ -21,6 +23,8 @@ export const useApp = create<AppState>()(
       lastInput: null,
       setLast: (lastInput, lastResult) => set({ lastInput, lastResult }),
       clearLast: () => set({ lastInput: null, lastResult: null }),
+      online: typeof navigator === "undefined" ? true : navigator.onLine,
+      setOnline: (online) => set({ online }),
     }),
     { name: "arogya-app", partialize: (s) => ({ lang: s.lang }) },
   ),

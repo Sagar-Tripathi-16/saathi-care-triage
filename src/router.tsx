@@ -1,5 +1,12 @@
 import { createRouter, useRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { registerServiceWorker } from "./pwa/register-sw";
+
+// Register the offline service worker once on the client.
+// The function itself guards against the Lovable preview iframe and SSR.
+if (typeof window !== "undefined") {
+  registerServiceWorker();
+}
 
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();

@@ -1,120 +1,100 @@
-# Arogya Saathi — UI/UX Refinement Plan
+## Goal
 
-Scope: visual + interaction polish only. The deterministic rule engine, JSON rule packs, IndexedDB storage, offline-first PWA behavior, AI-as-simplifier-only contract, and routing structure stay exactly as they are.
+Make Arogya Saathi a true offline-first PWA so ASHA workers can install it once on a phone, then open and use the full app (input → triage → result → history → language switch) with zero connectivity. Only AI simplification stays online.
 
-## 1. History page → expandable clinical timeline
+## Important caveats (per Lovable PWA guidance)
 
-Rebuild `src/routes/history.tsx` as an accordion list. Each card:
+- Service workers are intentionally **disabled in the Lovable preview iframe and on `*.lovableproject.com` / `id-preview--*` hosts**. Offline behavior will only be testable on the **published site** (`saathi-care-triage.lovable.app`) or after "Add to Home Screen" on a real device. This is required to avoid the editor preview serving a stale shell.
+- We will use a **NetworkFirst** strategy for HTML navigations and **CacheFirst (with revalidation)** for static assets. We never use cache-first on HTML — that locks devices to a stale build forever.
+- We will not use `selfDestroying`. We will ship a kill-switch-friendly registration so future cleanup is possible.
 
-- **Severity left border** (4px): red (Emergency), amber (PHC Referral), green (Home Care), using existing `--severity-*` tokens.
-- **Collapsed row**: severity chip · patient name · age/pregnancy · timestamp · urgency · 1-line action summary · chevron.
-- **Override badge** (small, with `AlertTriangle` icon) when any item in `triggered_rules` corresponds to a rule whose `rule_type === "override_rule"`.
-- **Expanded panel** (smooth `animate-accordion-down`):
-  - Vitals grid (temp, SpO₂, Hb, RR, fever days) — only show populated fields.
-  - Selected symptoms as chips.
-  - Maternal status (pregnant + weeks) when applicable.
-  - Triggered rule IDs, warning signs, full recommended action.
-  - AI explanation block if it was generated (see §5 below).
-  - Two actions: **View Full Record** (modal/route) and **Re-open Assessment** (loads input + result into store, navigates to `/result` in read-only banner mode).
+## Changes
 
-Implementation notes:
-- Use existing shadcn `Accordion` and `Badge` components; no new deps.
-- Add a small helper `isOverrideTriggered(record)` that checks rule IDs against a precomputed Set built from `loadAllRules()` (already exposed by `src/engine/rules.ts`).
-- Persist the last AI simplification: extend `AssessmentRecord` in `src/storage/db.ts` with optional `ai_simplified?: { lang: Lang; payload: Simplified }` (additive, no migration needed because the IDB store has no schema constraint on record shape; existing records remain readable). Save it from the result page when the user runs simplification.
-- Add `getAssessment(id)` is already present; add `updateAssessment(id, patch)` for storing AI output.
+### 1. Add PWA tooling
 
-## 2. Override / escalation warning system
+- Add dependency: `vite-plugin-pwa` (+ `workbox-window`).
+- Extend `vite.config.ts` to pass `vite: { plugins: [VitePWA({...})] }` through `@lovable.dev/vite-tanstack-config`'s `defineConfig`.
 
-Centralize override detection in `src/engine/index.ts`:
+VitePWA config:
+- `registerType: "autoUpdate"`
+- `devOptions.enabled: false` (no SW in dev/preview)
+- `injectRegister: null` (we register manually with the iframe/preview guard)
+- `workbox`:
+  - `globPatterns`: `**/*.{js,css,html,svg,woff2,json,webmanifest}` — precaches JS bundles, CSS, route HTML, icons, manifest, and the bundled rule JSON / dictionary chunks
+  - `navigateFallback: "/"` with `navigateFallbackDenylist: [/^\/api\//, /^\/~/, /^\/_/]`
+  - `runtimeCaching`:
+    - HTML navigations → `NetworkFirst`, 3s timeout, cache `html`
+    - Same-origin static (`script|style|image|font`) → `StaleWhileRevalidate`, cache `assets`
+    - `ai.gateway.lovable.dev` → `NetworkOnly` (never cache AI)
+  - `cleanupOutdatedCaches: true`
 
-- Extend `TriageResult` with `override_triggered: boolean` and `override_rule_ids: string[]` (additive; persisted records without it default to `false`).
-- Set both fields during the existing override pass in `runTriage` — this is metadata only, the classification logic is unchanged.
+### 2. Manual SW registration with iframe/preview guard
 
-UI surfaces:
-- **Result page** (`src/routes/result.tsx`): when `override_triggered`, render a slim warning strip directly **below** the severity banner — `AlertTriangle` + label like "Emergency override triggered — critical symptoms superseded standard triage flow." Color: amber for non-emergency overrides, red-tinted for emergency overrides. Subtle, single line, tappable to expand into which rule(s) caused it.
-- **History cards**: small inline override badge in the collapsed row.
-- Copy goes through `src/i18n/dict.ts` as new keys: `override_banner_title`, `override_banner_desc`, `override_badge`.
+New file `src/pwa/register-sw.ts`:
+- Only runs in browser.
+- Skips registration if `window.self !== window.top` (iframe) OR hostname includes `id-preview--` / `lovableproject.com`.
+- In those skipped cases, also unregister any existing SW (cleanup safety).
+- Otherwise calls `registerSW({ immediate: true })` from `virtual:pwa-register`.
+- Imported once from `src/router.tsx` (client-only via `if (typeof window !== "undefined")`).
 
-## 3. Result page UX refinement
+### 3. Manifest + icons (installable / splash)
 
-Same routes/components; visual hierarchy upgrades in `src/routes/result.tsx`:
+Update `public/manifest.webmanifest`:
+- Keep existing `name`, `short_name`, `theme_color`, `background_color`, `display: "standalone"`.
+- Add `lang: "en"`, `dir: "ltr"`, `orientation: "portrait"`, `categories: ["health", "medical"]`.
+- Replace single icon with proper sizes: `192x192`, `512x512` (PNG, `purpose: "any"`) and one `512x512` `purpose: "maskable"`. Keep the current SVG as an additional `any` entry. PNGs will be generated from the existing teal stethoscope mark and placed in `public/icons/`.
+- Add `apple-touch-icon` link in root head for iOS install/splash.
 
-- Severity banner: larger headline, urgency as a pill above title, soft gradient using `--severity-*-soft` → `--severity-*` for emphasis, stronger shadow on Emergency only.
-- Convert "Why", "Warning signs", "Triggered rules" into shadcn `Card`s with section icons (`Stethoscope`, `AlertTriangle`, `ListChecks`).
-- "Triggered rules" becomes a collapsible (`Accordion`) listing each rule as: rule_id badge · explanation_template · its specific warning signs. Pull this from `result.triggered_rules` joined back against `loadAllRules()`.
-- **Sticky mobile action bar**: on `< sm`, fix "Save & New" + "View History" to bottom with `safe-area-inset-bottom` padding; on desktop they sit inline as today.
-- Validation warnings get a clearer amber card with icon, kept above the "Why" section.
+### 4. Offline-aware UI (graceful AI degradation)
 
-## 4. AI explanation UX
+- `src/store/app.ts`: add `online: boolean` plus `setOnline`. Initialize from `navigator.onLine`; subscribe to `online`/`offline` events once (in `AppShell`'s existing effect, push state into store instead of local state).
+- `src/routes/result.tsx`:
+  - Read `online` from store.
+  - When offline: disable the "Explain in Simple Language" button and show a small inline notice: **"AI simplification needs internet. Triage result is fully available offline."** (translated via `dict.ts`).
+  - All other result content (severity, reasoning, warning signs, recommended action, history save) continues to work.
+- `src/components/AppShell.tsx`: existing online/offline badge stays; just sourced from the shared store now.
+- `src/i18n/dict.ts`: add keys `ai_offline_notice`, `ai_offline_short` in en/hi/kn.
 
-In `src/routes/result.tsx` and the dictionary:
+### 5. Offline route fallback
 
-- Replace `simplify_with_ai` copy with three context-aware variants and pick by language:
-  - en: "Explain in Simple Language"
-  - hi: "सरल भाषा में समझाएँ"
-  - kn: "ಸರಳ ಭಾಷೆಯಲ್ಲಿ ವಿವರಿಸಿ"
-- Add subkeys `explain_for_asha` and `translate_and_simplify` for a small dropdown of CTA tone (optional, default = simple language).
-- Output card: softer `bg-accent/40` background, sectioned with icons:
-  - Headline (large, with `Sparkles`)
-  - Why → bullets with `Info`
-  - Warning signs → bullets with `AlertTriangle`, amber accent
-  - Recommended action → highlighted block with `ArrowRight`
-- Always show the "AI-simplified explanation" label as a subtle footer chip.
-- On success, persist via `updateAssessment(id, { ai_simplified })` so History can show it later.
-- Keep deterministic fallback messaging on offline / failure unchanged.
+- Precaching all built route HTML + `navigateFallback: "/"` means navigating to `/`, `/history`, or any client route works offline.
+- IndexedDB (`src/storage/db.ts`) is already client-side and works offline — no change.
+- Rule JSON files are imported at build time and bundled into the JS chunks, so they are precached automatically. No runtime fetch.
+- `src/i18n/dict.ts` is a static module — already bundled and precached.
 
-## 5. Mobile-first responsiveness
+### 6. Documentation note for the user
 
-Across `index.tsx`, `result.tsx`, `history.tsx`, `AppShell.tsx`:
+Add a short comment block at the top of `src/pwa/register-sw.ts` explaining:
+- SW only activates in the published deployment (or installed PWA), never in the Lovable editor preview.
+- To test offline: open the published URL on a phone, install via "Add to Home Screen", switch off Wi-Fi/data, reopen — input/triage/result/history/language must all work; AI button shows offline notice.
 
-- Min touch target 44px on all chips/buttons; bump symptom chip padding from `px-3 py-2` to `px-3.5 py-2.5` and add `min-h-[44px]`.
-- Form fields: `text-base` on mobile to prevent iOS zoom; vitals grid collapses to 2-col on `< sm`.
-- Sticky **Run Triage** button on mobile (already partly sticky — fix spacing so it doesn't overlap the last symptom row; add backdrop blur + top border).
-- Header language selector: switch to icon + short code (`EN/HI/KN`) under `sm`.
-- Ensure `overflow-x-hidden` on `<main>` to kill any horizontal scroll from long Kannada strings.
-- Symptom group containers wrap chips with `gap-2` and `flex-wrap`, no scroll.
+## Out of scope (explicitly preserved)
 
-## 6. Input flow polish
+- Deterministic engine (`src/engine/*`), rule JSON, IndexedDB schema, routing, language system, server function for AI — all unchanged.
 
-`src/routes/index.tsx`:
+## Files
 
-- Danger signs group: render in its own card with red-tinted border (`border-severity-emergency/40`), soft red background (`bg-severity-emergency-soft/40`), and a small "Critical" label — chips inside still use the standard selected style but get a red ring when selected.
-- Maternal section: when `pregnant` is checked, weeks field gets a helper line ("Used for trimester-aware rules") and a soft pink-tinted card.
-- Vitals: add unit hints inline (small muted text under each label) and progressive disclosure — collapse "Less common vitals" (Hb, RR, fever days) into a "Show more" toggle on mobile only.
-- Keep all current fields, conditional logic, and submission flow unchanged.
+**New**
+- `src/pwa/register-sw.ts`
+- `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/icon-512-maskable.png`
 
-## 7. Visual polish (system-wide)
+**Edited**
+- `package.json` (add `vite-plugin-pwa`, `workbox-window`)
+- `vite.config.ts` (wire VitePWA via `defineConfig({ vite: { plugins: [...] } })`)
+- `public/manifest.webmanifest` (icon set, extra metadata)
+- `src/routes/__root.tsx` (apple-touch-icon link)
+- `src/router.tsx` (one-time SW register import, browser-guarded)
+- `src/store/app.ts` (online state)
+- `src/components/AppShell.tsx` (use shared online state)
+- `src/routes/result.tsx` (offline-aware AI button + notice)
+- `src/i18n/dict.ts` (offline notice strings in en/hi/kn)
 
-- Tighten radius scale usage: cards `rounded-2xl`, chips `rounded-full`, banners `rounded-2xl` with subtle `shadow-sm` (Emergency gets `shadow-md`).
-- Typography rhythm: section headings `text-base font-semibold`, subheads `text-sm font-medium text-muted-foreground uppercase tracking-wide`, body `text-sm leading-relaxed`.
-- Add `animate-fade-in` on result sections and `animate-accordion-down/up` on history cards (already in tw-animate-css).
-- Verify contrast: muted-foreground on card backgrounds passes AA at body size — adjust the `--muted-foreground` token slightly darker if needed.
-- Footer disclaimer gets a small shield icon to reinforce the "decision support, not diagnosis" framing.
+## Validation flow
 
-## 8. i18n additions
-
-New keys added to all three dictionaries (en/hi/kn):
-`override_banner_title`, `override_banner_desc`, `override_badge`, `view_full_record`, `reopen_assessment`, `read_only_mode`, `vitals_more`, `vitals_less`, `critical_label`, `ai_label`, `explain_simple`, `explain_for_asha`, `translate_and_simplify`, `ai_saved`, `expand`, `collapse`.
-
-## What stays exactly the same
-
-- `src/engine/*` logic, `src/rules/*.json` content, classifier, validator, normalizer, evaluator.
-- IndexedDB store name + key path; only additive optional fields on records.
-- Server function `simplifyExplanation` contract (request/response unchanged).
-- Routing: `/`, `/result`, `/history`.
-- PWA manifest + offline service worker behavior.
-- Severity hierarchy and tokens.
-
-## Files touched
-
-- `src/routes/history.tsx` (rebuild as accordion timeline)
-- `src/routes/result.tsx` (hierarchy, override banner, sticky mobile actions, AI card)
-- `src/routes/index.tsx` (danger emphasis, maternal hint, mobile sizing, vitals progressive disclosure)
-- `src/components/AppShell.tsx` (mobile language toggle, header polish)
-- `src/engine/index.ts` (set `override_triggered` + `override_rule_ids` — additive only)
-- `src/engine/types.ts` (extend `TriageResult` with two optional fields)
-- `src/storage/db.ts` (add `updateAssessment`, optional `ai_simplified` field on record type)
-- `src/i18n/dict.ts` (new keys × 3 languages)
-- `src/styles.css` (minor token tweak if contrast check fails; otherwise untouched)
-
-No new dependencies. No architecture changes. No engine semantics changes.
+After implementation, verify on the **published URL**:
+1. Open on phone, let it fully load.
+2. "Add to Home Screen" → confirm icon + splash use the teal stethoscope.
+3. Enable airplane mode.
+4. Close and relaunch the installed app.
+5. Confirm: form loads, can submit, result page renders with reasoning + warning signs, history page lists prior records, language switch updates UI, AI button shows offline notice instead of calling.
+6. Re-enable internet → AI button works again.

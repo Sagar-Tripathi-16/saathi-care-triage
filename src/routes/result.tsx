@@ -161,7 +161,35 @@ function ResultPage() {
           </div>
         )}
 
-        {/* Validation warnings */}
+        {/* High-risk pregnancy banner */}
+        {isHighRisk && (
+          <div className="rounded-xl border-2 border-severity-emergency/60 bg-severity-emergency-soft p-4 animate-fade-in">
+            <div className="flex items-start gap-2.5">
+              <HeartPulse className="size-6 text-severity-emergency shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-base font-bold text-severity-emergency tracking-wide">
+                  {t(lang, "high_risk_pregnancy")}
+                </div>
+                <div className="text-sm font-medium text-foreground mt-1">
+                  {t(lang, "maternal_risk_warning")}
+                </div>
+                <ul className="mt-2 space-y-1 text-sm text-foreground">
+                  {(highRisk?.reasons ?? []).map((rk) => (
+                    <li key={rk} className="flex gap-2">
+                      <span className="size-1.5 rounded-full bg-severity-emergency shrink-0 mt-2" />
+                      <span>{t(lang, rk as Parameters<typeof t>[1])}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-3 rounded-lg bg-card/60 border border-border px-3 py-2 text-sm text-foreground flex items-start gap-2">
+                  <ArrowRight className="size-4 text-severity-emergency shrink-0 mt-0.5" />
+                  <span>{t(lang, "maternal_risk_action")}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {result.validation_issues.filter((i) => i.level === "warning").length > 0 && (
           <div className="rounded-xl border border-severity-phc/40 bg-severity-phc-soft text-severity-phc-foreground p-3 text-sm">
             <div className="flex items-center gap-2 font-medium mb-1">

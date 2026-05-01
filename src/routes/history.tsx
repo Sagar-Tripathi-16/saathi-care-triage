@@ -145,6 +145,17 @@ function HistoryPage() {
             const isOverride =
               !!it.result?.override_triggered ||
               it.triggered_rules.some((id) => overrideIds.has(id));
+            const isHR = !!it.high_risk_pregnancy?.flagged;
+            const trend = it.id != null ? trends.get(it.id) : null;
+            const fu = it.follow_up;
+            const fuPending = !!fu && !it.follow_up_completed_at;
+            const fuDueLabel: { label: string; tone: "overdue" | "today" | "scheduled" } | null = (() => {
+              if (!fuPending || !fu) return null;
+              const dueDay = (() => { const d = new Date(fu.due_date); d.setHours(0,0,0,0); return d.getTime(); })();
+              if (dueDay < today) return { label: t(lang, "follow_up_overdue"), tone: "overdue" };
+              if (dueDay === today) return { label: t(lang, "follow_up_today"), tone: "today" };
+              return { label: t(lang, "follow_up_due"), tone: "scheduled" };
+            })();
 
             const vitals: Array<[string, string]> = [];
             const inp = it.input;
@@ -168,6 +179,49 @@ function HistoryPage() {
                     {isOverride && (
                       <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
                         <AlertTriangle className="size-3" /> {t(lang, "override_badge")}
+                      </span>
+                    )}
+                    {isHR && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
+                        <HeartPulse className="size-3" /> {t(lang, "high_risk_pregnancy")}
+                      </span>
+                    )}
+                    {fuDueLabel && (
+                      <span
+                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${
+                          fuDueLabel.tone === "overdue"
+                            ? "bg-severity-emergency-soft text-severity-emergency"
+                            : fuDueLabel.tone === "today"
+                              ? "bg-severity-phc-soft text-severity-phc-foreground"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Calendar className="size-3" /> {fuDueLabel.label}
+                      </span>
+                    )}
+                    {trend && (
+                      <span
+                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium ${
+                          trend.delta > 0
+                            ? "bg-severity-emergency-soft text-severity-emergency"
+                            : trend.delta < 0
+                              ? "bg-severity-home-soft text-severity-home"
+                              : "bg-muted text-muted-foreground"
+                        }`}
+                        title={`${t(lang, "trend_previous")}: ${severityLabel(trend.prev.severity as Severity, lang)}`}
+                      >
+                        {trend.delta > 0 ? (
+                          <TrendingUp className="size-3" />
+                        ) : trend.delta < 0 ? (
+                          <TrendingDown className="size-3" />
+                        ) : (
+                          <Minus className="size-3" />
+                        )}
+                        {trend.delta > 0
+                          ? t(lang, "trend_escalated")
+                          : trend.delta < 0
+                            ? t(lang, "trend_deescalated")
+                            : t(lang, "trend_stable")}
                       </span>
                     )}
                     <div className="flex-1 min-w-0">

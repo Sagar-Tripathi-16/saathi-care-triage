@@ -69,6 +69,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {t(lang, "nav_new")}
           </Link>
           <Link
+            to="/queue"
+            className={`px-3 py-1.5 rounded-md min-h-[36px] inline-flex items-center ${
+              route === "/queue" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
+            }`}
+          >
+            {t(lang, "nav_queue")}
+          </Link>
+          <Link
             to="/history"
             className={`px-3 py-1.5 rounded-md min-h-[36px] inline-flex items-center ${
               route === "/history" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"

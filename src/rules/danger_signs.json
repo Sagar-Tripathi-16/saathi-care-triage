@@ -1,0 +1,47 @@
+[
+  {
+    "rule_id": "DANGER_001",
+    "module": "danger_signs",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "convulsions", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent hospital referral",
+    "reasoning": ["Convulsions detected"],
+    "warning_signs": ["Severe neurological emergency"],
+    "explanation_template": "The patient has convulsions requiring immediate medical attention."
+  },
+  {
+    "rule_id": "DANGER_002",
+    "module": "danger_signs",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "unconscious", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent emergency referral",
+    "reasoning": ["Loss of consciousness detected"],
+    "warning_signs": ["Critical emergency"],
+    "explanation_template": "The patient is unconscious and requires immediate medical care."
+  },
+  {
+    "rule_id": "DANGER_003",
+    "module": "danger_signs",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["pediatric"],
+    "conditions": [{ "field": "unable_to_feed", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent pediatric evaluation",
+    "reasoning": ["Child unable to feed"],
+    "warning_signs": ["Severe pediatric danger sign"],
+    "explanation_template": "The child is unable to feed and requires urgent medical evaluation."
+  }
+]

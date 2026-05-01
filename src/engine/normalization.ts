@@ -86,8 +86,7 @@ export function normalize(input: PatientInput): PatientInput {
   } else if (typeof out.breathlessness === "string") {
     out.breathlessness = out.breathlessness.trim().toLowerCase();
   } else if (out.breathlessness === true || normSymptoms.includes("breathlessness")) {
-    // leave as flag; severe form requires explicit
-    if (out.breathlessness !== "severe") out.breathlessness = out.breathlessness === true ? "mild" : out.breathlessness;
+    out.breathlessness = "mild";
   }
 
   // coerce known boolean symptom fields if provided as strings

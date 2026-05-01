@@ -1,0 +1,62 @@
+[
+  {
+    "rule_id": "RESP_001",
+    "module": "respiratory",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "spo2", "operator": "<", "value": 90 }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent oxygen evaluation and referral",
+    "reasoning": ["Dangerously low oxygen saturation detected"],
+    "warning_signs": ["Severe respiratory compromise"],
+    "explanation_template": "The patient's oxygen level is dangerously low."
+  },
+  {
+    "rule_id": "RESP_002",
+    "module": "respiratory",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["adult", "maternal", "universal"],
+    "conditions": [{ "field": "breathlessness", "operator": "==", "value": "severe" }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent respiratory referral",
+    "reasoning": ["Severe breathlessness detected"],
+    "warning_signs": ["Respiratory distress"],
+    "explanation_template": "The patient has severe difficulty breathing requiring urgent care."
+  },
+  {
+    "rule_id": "RESP_003",
+    "module": "respiratory",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "spo2", "operator": "between", "value": [90, 94] }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended",
+    "reasoning": ["Moderately reduced oxygen saturation detected"],
+    "warning_signs": ["Possible respiratory compromise"],
+    "explanation_template": "The oxygen level is below the normal safe range."
+  },
+  {
+    "rule_id": "RESP_004",
+    "module": "respiratory",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["pediatric"],
+    "conditions": [{ "field": "chest_indrawing", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Urgent",
+    "recommended_action": "Urgent pediatric respiratory evaluation",
+    "reasoning": ["Chest indrawing detected"],
+    "warning_signs": ["Respiratory distress in child"],
+    "explanation_template": "Chest indrawing may indicate severe breathing difficulty."
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "FEVER_001",
+    "module": "fever",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "temperature", "operator": ">=", "value": 39 }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended",
+    "reasoning": ["High fever detected"],
+    "warning_signs": ["Possible serious infection"],
+    "explanation_template": "The patient has a high fever requiring medical assessment."
+  },
+  {
+    "rule_id": "FEVER_002",
+    "module": "fever",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "combination_rule",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "temperature", "operator": ">=", "value": 38.5 },
+      { "field": "confusion", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent emergency referral",
+    "reasoning": ["Fever with confusion detected"],
+    "warning_signs": ["Possible severe systemic infection"],
+    "explanation_template": "Fever with confusion requires urgent medical attention."
+  },
+  {
+    "rule_id": "FEVER_003",
+    "module": "fever",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "fever_duration_days", "operator": ">", "value": 7 }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Further medical evaluation recommended",
+    "reasoning": ["Persistent fever detected"],
+    "warning_signs": ["Ongoing infection risk"],
+    "explanation_template": "Persistent fever may require further medical evaluation."
+  }
+]

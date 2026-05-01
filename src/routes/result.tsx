@@ -37,6 +37,7 @@ export const Route = createFileRoute("/result")({
 function ResultPage() {
   const lang = useApp((s) => s.lang);
   const result = useApp((s) => s.lastResult);
+  const online = useApp((s) => s.online);
   const navigate = useNavigate();
 
   const [simplifying, setSimplifying] = useState(false);
@@ -198,13 +199,19 @@ function ResultPage() {
             </h2>
             <button
               onClick={onSimplify}
-              disabled={simplifying}
-              className="px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 min-h-[40px] inline-flex items-center gap-1.5"
+              disabled={simplifying || !online}
+              title={!online ? t(lang, "ai_disabled_offline") : undefined}
+              className="px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] inline-flex items-center gap-1.5"
             >
               <Sparkles className="size-3.5" />
               {simplifying ? "…" : t(lang, "explain_simple")}
             </button>
           </div>
+          {!online && (
+            <p className="mt-2 text-sm text-muted-foreground flex items-center gap-1.5">
+              <Info className="size-3.5" /> {t(lang, "ai_offline_notice")}
+            </p>
+          )}
           {aiError && <p className="mt-2 text-sm text-muted-foreground">{aiError}</p>}
           {simplified && (
             <div className="mt-3 rounded-xl bg-accent/50 border border-accent p-4 space-y-3 text-sm text-accent-foreground animate-fade-in">

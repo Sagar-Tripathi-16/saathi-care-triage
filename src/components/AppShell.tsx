@@ -1,14 +1,15 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useApp } from "@/store/app";
 import { LANG_LABELS, t, type Lang } from "@/i18n/dict";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Stethoscope, Wifi, WifiOff, ShieldCheck } from "lucide-react";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const lang = useApp((s) => s.lang);
   const setLang = useApp((s) => s.setLang);
+  const online = useApp((s) => s.online);
+  const setOnline = useApp((s) => s.setOnline);
   const route = useRouterState({ select: (s) => s.location.pathname });
-  const [online, setOnline] = useState(true);
 
   useEffect(() => {
     const update = () => setOnline(typeof navigator === "undefined" ? true : navigator.onLine);
@@ -19,7 +20,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener("online", update);
       window.removeEventListener("offline", update);
     };
-  }, []);
+  }, [setOnline]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col overflow-x-hidden">

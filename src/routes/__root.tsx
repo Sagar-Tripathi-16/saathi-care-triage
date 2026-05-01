@@ -36,12 +36,19 @@ export const Route = createRootRoute({
         content:
           "Offline, explainable household triage and escalation support for ASHA workers. Deterministic rule engine, never a diagnosis.",
       },
-      { property: "og:title", content: "Arogya Saathi — Offline Triage Support" },
+      { property: "og:title", content: "Arogya Saathi — Offline Triage Support for ASHA Workers" },
       {
         property: "og:description",
         content: "Frontline triage support for rural healthcare workers. Works fully offline.",
       },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Arogya Saathi — Offline Triage Support for ASHA Workers" },
+      { name: "description", content: "Arogya Saathi is an offline, explainable household triage and escalation system for ASHA workers." },
+      { property: "og:description", content: "Arogya Saathi is an offline, explainable household triage and escalation system for ASHA workers." },
+      { name: "twitter:description", content: "Arogya Saathi is an offline, explainable household triage and escalation system for ASHA workers." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/21e47dbf-b5ac-4ea0-8d2d-38e9f48b05ed/id-preview-34f8cc86--afa4b6a9-8206-4c15-a4a7-18af3408b231.lovable.app-1777653572904.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/21e47dbf-b5ac-4ea0-8d2d-38e9f48b05ed/id-preview-34f8cc86--afa4b6a9-8206-4c15-a4a7-18af3408b231.lovable.app-1777653572904.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

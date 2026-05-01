@@ -4,10 +4,30 @@ import { AppShell } from "@/components/AppShell";
 import { useApp } from "@/store/app";
 import { t } from "@/i18n/dict";
 import { severityClasses, severityLabel } from "@/lib/severity";
-import { clearAssessments, listAssessments, type AssessmentRecord } from "@/storage/db";
+import {
+  clearAssessments,
+  listAssessments,
+  matchPatientHistory,
+  markFollowUpComplete,
+  type AssessmentRecord,
+} from "@/storage/db";
 import { loadAllRules } from "@/engine/rules";
+import { SEVERITY_LEVEL } from "@/engine/classifier";
 import type { Severity } from "@/engine/types";
-import { Trash2, ChevronDown, AlertTriangle, RotateCcw, Activity } from "lucide-react";
+import {
+  Trash2,
+  ChevronDown,
+  AlertTriangle,
+  RotateCcw,
+  Activity,
+  Calendar,
+  HeartPulse,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  CheckCircle2,
+  Play,
+} from "lucide-react";
 import {
   Accordion,
   AccordionContent,

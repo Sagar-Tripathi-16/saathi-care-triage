@@ -81,6 +81,7 @@ type Dict = {
   selected_symptoms: string;
   no_vitals: string;
   weeks_helper: string;
+  ai_offline_notice: string;
 };
 
 const en: Dict = {
@@ -155,6 +156,7 @@ const en: Dict = {
   selected_symptoms: "Reported symptoms",
   no_vitals: "No vitals recorded",
   weeks_helper: "Used for trimester-aware rules",
+  ai_offline_notice: "AI simplification needs internet. The triage result is fully available offline.",
 };
 
 const hi: Dict = {
@@ -229,6 +231,7 @@ const hi: Dict = {
   selected_symptoms: "बताए गए लक्षण",
   no_vitals: "कोई संकेत दर्ज नहीं",
   weeks_helper: "त्रैमासिक नियमों के लिए उपयोग",
+  ai_offline_notice: "AI सरलीकरण के लिए इंटरनेट चाहिए। त्रिअज परिणाम ऑफ़लाइन भी पूरी तरह उपलब्ध है।",
 };
 
 const kn: Dict = {
@@ -303,6 +306,7 @@ const kn: Dict = {
   selected_symptoms: "ವರದಿ ಮಾಡಿದ ಲಕ್ಷಣಗಳು",
   no_vitals: "ಯಾವುದೇ ಚಿಹ್ನೆಗಳಿಲ್ಲ",
   weeks_helper: "ತ್ರೈಮಾಸಿಕ ನಿಯಮಗಳಿಗಾಗಿ ಬಳಸಲಾಗುತ್ತದೆ",
+  ai_offline_notice: "AI ಸರಳೀಕರಣಕ್ಕೆ ಇಂಟರ್ನೆಟ್ ಬೇಕು. ಟ್ರಯಾಜ್ ಫಲಿತಾಂಶ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿಯೂ ಸಂಪೂರ್ಣವಾಗಿ ಲಭ್ಯವಿದೆ.",
 };
 
 export const DICTS: Record<Lang, Dict> = { en, hi, kn };

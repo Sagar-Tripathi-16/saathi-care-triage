@@ -68,4 +68,6 @@ export interface TriageResult {
   timestamp: number;
   override_triggered?: boolean;
   override_rule_ids?: string[];
+  // Post-engine advisory (not produced by the deterministic rule engine itself)
+  high_risk_pregnancy?: { flagged: boolean; reasons: string[] };
 }

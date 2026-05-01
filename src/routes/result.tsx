@@ -310,6 +310,14 @@ function ResultPage() {
           )}
         </section>
 
+        {/* Follow-up planner */}
+        <FollowUpPlanner
+          recordId={record?.id ?? lastRecordId}
+          severity={result.triage}
+          highRisk={isHighRisk}
+          existing={record?.follow_up}
+        />
+
         {/* Triggered rules */}
         {result.triggered_rules.length > 0 && (
           <section className="bg-card border border-border rounded-2xl p-4 shadow-sm">

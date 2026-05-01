@@ -48,6 +48,7 @@ export const Route = createFileRoute("/history")({
 function HistoryPage() {
   const lang = useApp((s) => s.lang);
   const setLast = useApp((s) => s.setLast);
+  const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
   const [items, setItems] = useState<AssessmentRecord[]>([]);
 
@@ -65,6 +66,30 @@ function HistoryPage() {
     refresh();
   }, []);
 
+  // Compute trend (vs prior assessment for the same patient) for each item
+  const trends = useMemo(() => {
+    const map = new Map<number, { prev: AssessmentRecord; delta: number } | null>();
+    for (const it of items) {
+      if (it.id == null) continue;
+      const prior = matchPatientHistory(items, it.patient_name, it.age, it.created_at);
+      const prev = prior[0]; // already newest-first
+      if (!prev) {
+        map.set(it.id, null);
+        continue;
+      }
+      const curLevel = SEVERITY_LEVEL[it.severity as Severity] ?? 0;
+      const prevLevel = SEVERITY_LEVEL[prev.severity as Severity] ?? 0;
+      map.set(it.id, { prev, delta: curLevel - prevLevel });
+    }
+    return map;
+  }, [items]);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }, []);
+
   async function onClear() {
     if (typeof window !== "undefined" && !window.confirm(t(lang, "confirm_clear"))) return;
     await clearAssessments();
@@ -72,8 +97,19 @@ function HistoryPage() {
   }
 
   function onReopen(rec: AssessmentRecord) {
-    setLast(rec.input, rec.result);
+    setLast(rec.input, rec.result, rec.id ?? null);
     navigate({ to: "/result" });
+  }
+
+  async function onMarkComplete(rec: AssessmentRecord) {
+    if (rec.id == null) return;
+    await markFollowUpComplete(rec.id);
+    refresh();
+  }
+
+  function onStartRevisit(rec: AssessmentRecord) {
+    if (rec.id != null) setPendingPreviousId(rec.id);
+    navigate({ to: "/" });
   }
 
   return (

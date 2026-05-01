@@ -1,0 +1,35 @@
+[
+  {
+    "rule_id": "ANEMIA_001",
+    "module": "anemia",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "combination_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "hemoglobin", "operator": "<", "value": 7 },
+      { "field": "severe_weakness", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent maternal anemia referral",
+    "reasoning": ["Severe anemia risk detected during pregnancy"],
+    "warning_signs": ["Maternal emergency risk"],
+    "explanation_template": "The patient shows signs of severe anemia during pregnancy."
+  },
+  {
+    "rule_id": "ANEMIA_002",
+    "module": "anemia",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "hemoglobin", "operator": "between", "value": [7, 10] }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical anemia evaluation recommended",
+    "reasoning": ["Low hemoglobin detected"],
+    "warning_signs": ["Possible anemia"],
+    "explanation_template": "The patient has reduced hemoglobin requiring evaluation."
+  }
+]

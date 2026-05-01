@@ -1,0 +1,22 @@
+[
+  {
+    "rule_id": "DEHY_001",
+    "module": "dehydration",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "multi_condition",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "unable_to_drink", "operator": "==", "value": true },
+      { "field": "vomiting_everything", "operator": "==", "value": true },
+      { "field": "confusion", "operator": "==", "value": true }
+    ],
+    "minimum_conditions_required": 2,
+    "trigger_logic": "MINIMUM_MATCH",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent dehydration management",
+    "reasoning": ["Multiple severe dehydration indicators detected"],
+    "warning_signs": ["Critical dehydration risk"],
+    "explanation_template": "The patient shows multiple signs of severe dehydration."
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "rule_id": "ADULT_001",
+    "module": "adult_emergency",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["adult", "maternal"],
+    "conditions": [{ "field": "severe_chest_pain", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent hospital referral",
+    "reasoning": ["Severe chest pain detected"],
+    "warning_signs": ["Possible cardiac emergency"],
+    "explanation_template": "Severe chest pain requires urgent medical evaluation."
+  },
+  {
+    "rule_id": "ADULT_002",
+    "module": "adult_emergency",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "combination_rule",
+    "patient_category": ["adult", "maternal"],
+    "conditions": [
+      { "field": "severe_chest_pain", "operator": "==", "value": true },
+      { "field": "breathlessness", "operator": "==", "value": "severe" }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent cardiac and respiratory evaluation",
+    "reasoning": ["Chest pain with severe breathlessness detected"],
+    "warning_signs": ["Possible cardiac or respiratory emergency"],
+    "explanation_template": "Chest pain with severe breathing difficulty requires urgent care."
+  },
+  {
+    "rule_id": "ADULT_003",
+    "module": "adult_emergency",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "single_condition",
+    "patient_category": ["adult", "maternal"],
+    "conditions": [{ "field": "fainting", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent emergency evaluation",
+    "reasoning": ["Fainting episode detected"],
+    "warning_signs": ["Possible severe systemic issue"],
+    "explanation_template": "Loss of consciousness may indicate a serious medical condition."
+  }
+]

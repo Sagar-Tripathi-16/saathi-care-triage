@@ -1,0 +1,65 @@
+[
+  {
+    "rule_id": "MAT_001",
+    "module": "maternal",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["maternal"],
+    "conditions": [{ "field": "heavy_bleeding", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent maternal referral",
+    "reasoning": ["Heavy pregnancy bleeding detected"],
+    "warning_signs": ["Maternal emergency risk"],
+    "explanation_template": "Heavy bleeding during pregnancy requires urgent medical care."
+  },
+  {
+    "rule_id": "MAT_002",
+    "module": "maternal",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "combination_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "severe_headache", "operator": "==", "value": true },
+      { "field": "blurred_vision", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent maternal evaluation",
+    "reasoning": ["Severe headache with blurred vision detected"],
+    "warning_signs": ["Possible severe maternal complication"],
+    "explanation_template": "Severe headache with vision problems requires urgent medical evaluation."
+  },
+  {
+    "rule_id": "MAT_003",
+    "module": "maternal",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["maternal"],
+    "conditions": [{ "field": "reduced_fetal_movement", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Maternal evaluation recommended",
+    "reasoning": ["Reduced fetal movement reported"],
+    "warning_signs": ["Possible fetal distress"],
+    "explanation_template": "Reduced fetal movement may require urgent evaluation."
+  },
+  {
+    "rule_id": "MAT_004",
+    "module": "maternal",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["maternal"],
+    "conditions": [{ "field": "fetal_movement_stopped", "operator": "==", "value": true }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent maternal referral",
+    "reasoning": ["Fetal movement stopped"],
+    "warning_signs": ["Possible fetal emergency"],
+    "explanation_template": "Stopped fetal movement requires urgent medical attention."
+  }
+]

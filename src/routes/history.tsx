@@ -320,12 +320,66 @@ function HistoryPage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2 pt-1">
+                    {trend && (
+                      <div className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                        <span className="font-medium">{t(lang, "trend_previous")}:</span>{" "}
+                        {severityLabel(trend.prev.severity as Severity, lang)}
+                        <span className="mx-1.5">·</span>
+                        <span className="font-medium">{t(lang, "trend_current")}:</span>{" "}
+                        {severityLabel(it.severity as Severity, lang)}
+                      </div>
+                    )}
+
+                    {fu && (
+                      <div
+                        className={`rounded-lg border p-3 ${
+                          it.follow_up_completed_at
+                            ? "border-border bg-muted/30"
+                            : "border-severity-phc/40 bg-severity-phc-soft/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide font-medium text-muted-foreground mb-1">
+                          <Calendar className="size-3" /> {t(lang, "follow_up")}
+                          {it.follow_up_completed_at && (
+                            <span className="ml-auto inline-flex items-center gap-1 normal-case text-severity-home">
+                              <CheckCircle2 className="size-3" /> {t(lang, "follow_up_completed")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-foreground">
+                          <span className="font-medium">{new Date(fu.due_date).toLocaleDateString()}</span>
+                          {" · "}
+                          {t(lang, fu.revisit_reason as Parameters<typeof t>[1])}
+                        </div>
+                        {fu.notes && (
+                          <p className="text-muted-foreground mt-1 text-xs">{fu.notes}</p>
+                        )}
+                        {!it.follow_up_completed_at && (
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              type="button"
+                              onClick={() => onMarkComplete(it)}
+                              className="text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-card text-foreground min-h-[36px]"
+                            >
+                              <CheckCircle2 className="size-3.5" /> {t(lang, "mark_complete")}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2 pt-1">
                       <button
                         onClick={() => onReopen(it)}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium min-h-[44px]"
                       >
                         <RotateCcw className="size-4" /> {t(lang, "reopen_assessment")}
+                      </button>
+                      <button
+                        onClick={() => onStartRevisit(it)}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium min-h-[44px]"
+                      >
+                        <Play className="size-4" /> {t(lang, "start_revisit")}
                       </button>
                     </div>
                   </div>

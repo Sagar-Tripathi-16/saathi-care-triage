@@ -74,6 +74,7 @@ export function runTriage(rawInput: PatientInput): EngineOutput {
     explain.explanations = ["Patient appears stable based on current inputs. Continue routine home care."];
   }
 
+  const overrideMatches = triggered.filter((r) => r.rule_type === "override_rule");
   const result: TriageResult = {
     triage: severity,
     severity_level: SEVERITY_LEVEL[severity],
@@ -87,6 +88,8 @@ export function runTriage(rawInput: PatientInput): EngineOutput {
     validation_issues: v.issues,
     ai_explanation_allowed: true,
     timestamp: Date.now(),
+    override_triggered: overrideMatches.length > 0,
+    override_rule_ids: overrideMatches.map((r) => r.rule_id),
   };
 
   return { ok: true, result, validation_issues: v.issues };

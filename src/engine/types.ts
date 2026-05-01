@@ -66,4 +66,6 @@ export interface TriageResult {
   validation_issues: ValidationIssue[];
   ai_explanation_allowed: boolean;
   timestamp: number;
+  override_triggered?: boolean;
+  override_rule_ids?: string[];
 }

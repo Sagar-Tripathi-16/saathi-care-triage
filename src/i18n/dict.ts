@@ -63,6 +63,24 @@ type Dict = {
   optional: string;
   required_field: string;
   validation_blocked: string;
+  // override / refinement
+  override_banner_title: string;
+  override_banner_desc: string;
+  override_badge: string;
+  view_full_record: string;
+  reopen_assessment: string;
+  read_only_mode: string;
+  vitals_more: string;
+  vitals_less: string;
+  critical_label: string;
+  ai_label: string;
+  explain_simple: string;
+  ai_saved: string;
+  expand: string;
+  collapse: string;
+  selected_symptoms: string;
+  no_vitals: string;
+  weeks_helper: string;
 };
 
 const en: Dict = {
@@ -120,6 +138,23 @@ const en: Dict = {
   optional: "optional",
   required_field: "Required",
   validation_blocked: "Please fix the errors above before running triage.",
+  override_banner_title: "Emergency override triggered",
+  override_banner_desc: "Critical symptoms superseded standard triage flow. High-priority escalation applied automatically.",
+  override_badge: "Override",
+  view_full_record: "View full record",
+  reopen_assessment: "Re-open assessment",
+  read_only_mode: "Read-only — saved assessment",
+  vitals_more: "Show more vitals",
+  vitals_less: "Show fewer vitals",
+  critical_label: "Critical",
+  ai_label: "AI-simplified explanation",
+  explain_simple: "Explain in Simple Language",
+  ai_saved: "Saved with this assessment",
+  expand: "Expand",
+  collapse: "Collapse",
+  selected_symptoms: "Reported symptoms",
+  no_vitals: "No vitals recorded",
+  weeks_helper: "Used for trimester-aware rules",
 };
 
 const hi: Dict = {
@@ -177,6 +212,23 @@ const hi: Dict = {
   optional: "वैकल्पिक",
   required_field: "आवश्यक",
   validation_blocked: "त्रिअज से पहले ऊपर की त्रुटियाँ ठीक करें।",
+  override_banner_title: "आपातकालीन ओवरराइड लागू",
+  override_banner_desc: "गंभीर लक्षणों ने सामान्य त्रिअज प्रक्रिया को पीछे छोड़ दिया। उच्च प्राथमिकता एस्केलेशन स्वचालित रूप से लागू।",
+  override_badge: "ओवरराइड",
+  view_full_record: "पूरा रिकॉर्ड देखें",
+  reopen_assessment: "मूल्यांकन फिर से खोलें",
+  read_only_mode: "केवल पढ़ने के लिए — सहेजा गया मूल्यांकन",
+  vitals_more: "और संकेत दिखाएँ",
+  vitals_less: "कम संकेत दिखाएँ",
+  critical_label: "गंभीर",
+  ai_label: "AI-सरलीकृत स्पष्टीकरण",
+  explain_simple: "सरल भाषा में समझाएँ",
+  ai_saved: "इस मूल्यांकन के साथ सहेजा गया",
+  expand: "विस्तार",
+  collapse: "बंद करें",
+  selected_symptoms: "बताए गए लक्षण",
+  no_vitals: "कोई संकेत दर्ज नहीं",
+  weeks_helper: "त्रैमासिक नियमों के लिए उपयोग",
 };
 
 const kn: Dict = {
@@ -234,6 +286,23 @@ const kn: Dict = {
   optional: "ಐಚ್ಛಿಕ",
   required_field: "ಅಗತ್ಯವಿದೆ",
   validation_blocked: "ಟ್ರಯಾಜ್ ಮೊದಲು ಮೇಲಿನ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಿ.",
+  override_banner_title: "ತುರ್ತು ಓವರ್‌ರೈಡ್ ಸಕ್ರಿಯಗೊಂಡಿದೆ",
+  override_banner_desc: "ಗಂಭೀರ ಲಕ್ಷಣಗಳು ಸಾಮಾನ್ಯ ಟ್ರಯಾಜ್ ಹರಿವನ್ನು ಮೀರಿಸಿವೆ. ಹೆಚ್ಚಿನ ಆದ್ಯತೆಯ ಎಸ್ಕಲೇಶನ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಅನ್ವಯಿಸಲಾಗಿದೆ.",
+  override_badge: "ಓವರ್‌ರೈಡ್",
+  view_full_record: "ಪೂರ್ಣ ದಾಖಲೆ ನೋಡಿ",
+  reopen_assessment: "ಮೌಲ್ಯಮಾಪನ ಮತ್ತೆ ತೆರೆಯಿರಿ",
+  read_only_mode: "ಓದಲು ಮಾತ್ರ — ಉಳಿಸಿದ ಮೌಲ್ಯಮಾಪನ",
+  vitals_more: "ಹೆಚ್ಚು ಚಿಹ್ನೆಗಳು",
+  vitals_less: "ಕಡಿಮೆ ಚಿಹ್ನೆಗಳು",
+  critical_label: "ಗಂಭೀರ",
+  ai_label: "AI-ಸರಳಗೊಳಿಸಿದ ವಿವರಣೆ",
+  explain_simple: "ಸರಳ ಭಾಷೆಯಲ್ಲಿ ವಿವರಿಸಿ",
+  ai_saved: "ಈ ಮೌಲ್ಯಮಾಪನದೊಂದಿಗೆ ಉಳಿಸಲಾಗಿದೆ",
+  expand: "ವಿಸ್ತರಿಸಿ",
+  collapse: "ಮುಚ್ಚಿ",
+  selected_symptoms: "ವರದಿ ಮಾಡಿದ ಲಕ್ಷಣಗಳು",
+  no_vitals: "ಯಾವುದೇ ಚಿಹ್ನೆಗಳಿಲ್ಲ",
+  weeks_helper: "ತ್ರೈಮಾಸಿಕ ನಿಯಮಗಳಿಗಾಗಿ ಬಳಸಲಾಗುತ್ತದೆ",
 };
 
 export const DICTS: Record<Lang, Dict> = { en, hi, kn };

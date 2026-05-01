@@ -1,5 +1,13 @@
 import { openDB, type IDBPDatabase } from "idb";
 import type { PatientInput, TriageResult } from "@/engine/types";
+import type { Lang } from "@/i18n/dict";
+
+export interface SimplifiedAI {
+  headline: string;
+  why: string[];
+  warning_signs: string[];
+  recommended_action: string;
+}
 
 export interface AssessmentRecord {
   id?: number;
@@ -13,6 +21,7 @@ export interface AssessmentRecord {
   input: PatientInput;
   result: TriageResult;
   created_at: number;
+  ai_simplified?: { lang: Lang; payload: SimplifiedAI };
 }
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -64,6 +73,18 @@ export async function getAssessment(id: number): Promise<AssessmentRecord | null
     return ((await db.get("assessments", id)) as AssessmentRecord) ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function updateAssessment(id: number, patch: Partial<AssessmentRecord>): Promise<void> {
+  try {
+    const db = await getDB();
+    if (!db) return;
+    const existing = (await db.get("assessments", id)) as AssessmentRecord | undefined;
+    if (!existing) return;
+    await db.put("assessments", { ...existing, ...patch, id });
+  } catch (e) {
+    console.error("updateAssessment failed", e);
   }
 }
 

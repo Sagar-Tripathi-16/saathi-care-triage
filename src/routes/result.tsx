@@ -8,6 +8,7 @@ import { simplifyExplanation } from "@/server/ai.functions";
 import { loadAllRules } from "@/engine/rules";
 import { listAssessments, updateAssessment, type SimplifiedAI, type AssessmentRecord } from "@/storage/db";
 import { FollowUpPlanner } from "@/components/FollowUpPlanner";
+import { downloadTriageSlip } from "@/lib/pdfSlip";
 import {
   Sparkles,
   AlertTriangle,
@@ -18,6 +19,7 @@ import {
   Stethoscope,
   ArrowRight,
   HeartPulse,
+  FileDown,
 } from "lucide-react";
 import {
   Accordion,

@@ -121,6 +121,12 @@ type Dict = {
   reason_vitals_review: string;
   reason_pregnancy_check: string;
   reason_general: string;
+  // UI polish additions
+  queue_helper: string;
+  loading: string;
+  history_empty_hint: string;
+  queue_empty_hint: string;
+  offline_banner: string;
 };
 
 const en: Dict = {
@@ -234,6 +240,11 @@ const en: Dict = {
   reason_vitals_review: "Vitals review",
   reason_pregnancy_check: "Pregnancy check",
   reason_general: "General review",
+  queue_helper: "Only active and follow-up cases appear in Priority Queue.",
+  loading: "Loading…",
+  history_empty_hint: "Completed assessments are saved on this device for quick reference.",
+  queue_empty_hint: "Emergency cases (last 7 days), pending follow-ups, and high-risk pregnancies will appear here.",
+  offline_banner: "You're offline — triage and history work fully. AI simplification will resume online.",
 };
 
 const hi: Dict = {
@@ -347,6 +358,11 @@ const hi: Dict = {
   reason_vitals_review: "महत्वपूर्ण संकेत समीक्षा",
   reason_pregnancy_check: "गर्भावस्था जाँच",
   reason_general: "सामान्य समीक्षा",
+  queue_helper: "केवल सक्रिय और फ़ॉलो-अप मामले प्राथमिकता सूची में दिखते हैं।",
+  loading: "लोड हो रहा है…",
+  history_empty_hint: "पूर्ण किए गए मूल्यांकन इस डिवाइस पर सहेजे जाते हैं।",
+  queue_empty_hint: "आपातकाल (पिछले 7 दिन), लंबित फ़ॉलो-अप और उच्च-जोखिम गर्भावस्था यहाँ दिखेंगे।",
+  offline_banner: "आप ऑफ़लाइन हैं — त्रिअज और इतिहास पूरी तरह काम करते हैं। AI ऑनलाइन होने पर फिर से चलेगा।",
 };
 
 const kn: Dict = {

@@ -87,6 +87,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
 
+      {!online && (
+        <div className="bg-severity-phc-soft border-b border-severity-phc/30 text-severity-phc-foreground text-xs sm:text-sm animate-fade-in">
+          <div className="mx-auto max-w-3xl px-4 py-2 flex items-center gap-2">
+            <WifiOff className="size-3.5 shrink-0" />
+            <span className="leading-snug">{t(lang, "offline_banner")}</span>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 mx-auto max-w-3xl w-full px-4 py-5">{children}</main>
 
       <footer className="border-t border-border bg-card mt-6">

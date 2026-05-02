@@ -89,10 +89,14 @@ function QueuePage() {
   const navigate = useNavigate();
 
   const [items, setItems] = useState<AssessmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const now = Date.now();
 
   useEffect(() => {
-    listAssessments().then(setItems);
+    listAssessments().then((res) => {
+      setItems(res);
+      setLoading(false);
+    });
   }, []);
 
   const active = useMemo(() => {
@@ -133,11 +137,12 @@ function QueuePage() {
 
   return (
     <AppShell>
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex items-center justify-between gap-3 mb-2">
         <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
           <ListChecks className="size-5 text-primary" /> {t(lang, "queue_title")}
         </h1>
       </div>
+      <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{t(lang, "queue_helper")}</p>
 
       {/* Filter bar */}
       <div className="bg-card border border-border rounded-2xl p-3 mb-4 space-y-3">
@@ -197,10 +202,29 @@ function QueuePage() {
         </div>
       </div>
 
-      {active.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center">
-          <ListChecks className="size-8 mx-auto text-muted-foreground mb-2" />
-          <p className="text-muted-foreground text-sm">{t(lang, "queue_empty")}</p>
+      {loading ? (
+        <ul className="space-y-3" aria-busy="true" aria-label={t(lang, "loading")}>
+          {[0, 1, 2].map((i) => (
+            <li key={i} className="bg-card border border-border border-l-4 border-l-muted rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-5 w-20 rounded-md bg-muted animate-pulse" />
+                <div className="h-5 w-24 rounded-md bg-muted animate-pulse" />
+                <div className="ml-auto h-3 w-8 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="h-4 w-2/3 rounded bg-muted animate-pulse mb-1.5" />
+              <div className="h-3 w-3/4 rounded bg-muted/70 animate-pulse" />
+            </li>
+          ))}
+        </ul>
+      ) : active.length === 0 ? (
+        <div className="bg-card border border-border rounded-2xl p-8 text-center animate-fade-in">
+          <div className="mx-auto mb-3 size-14 rounded-full bg-severity-home-soft grid place-items-center">
+            <ListChecks className="size-7 text-severity-home" />
+          </div>
+          <p className="text-foreground font-medium text-sm">{t(lang, "queue_empty")}</p>
+          <p className="text-muted-foreground text-xs mt-1.5 leading-relaxed max-w-sm mx-auto">
+            {t(lang, "queue_empty_hint")}
+          </p>
         </div>
       ) : (
         <ul className="space-y-3">

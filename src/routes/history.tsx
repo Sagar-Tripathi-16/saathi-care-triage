@@ -51,6 +51,7 @@ function HistoryPage() {
   const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
   const [items, setItems] = useState<AssessmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const overrideIds = useMemo(() => {
     const set = new Set<string>();
@@ -59,7 +60,9 @@ function HistoryPage() {
   }, []);
 
   async function refresh() {
-    setItems(await listAssessments());
+    const res = await listAssessments();
+    setItems(res);
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -126,10 +129,27 @@ function HistoryPage() {
         )}
       </div>
 
-      {items.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center">
-          <Activity className="size-8 mx-auto text-muted-foreground mb-2" />
-          <p className="text-muted-foreground text-sm">{t(lang, "no_history")}</p>
+      {loading ? (
+        <div className="space-y-3" aria-busy="true" aria-label={t(lang, "loading")}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-card border border-border border-l-4 border-l-muted rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-5 w-20 rounded-md bg-muted animate-pulse" />
+                <div className="h-4 w-32 rounded bg-muted animate-pulse" />
+              </div>
+              <div className="h-3 w-1/2 rounded bg-muted/70 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="bg-card border border-border rounded-2xl p-8 text-center animate-fade-in">
+          <div className="mx-auto mb-3 size-14 rounded-full bg-accent grid place-items-center">
+            <Activity className="size-7 text-primary" />
+          </div>
+          <p className="text-foreground font-medium text-sm">{t(lang, "no_history")}</p>
+          <p className="text-muted-foreground text-xs mt-1.5 leading-relaxed max-w-sm mx-auto">
+            {t(lang, "history_empty_hint")}
+          </p>
         </div>
       ) : (
         <Accordion type="multiple" className="space-y-3">

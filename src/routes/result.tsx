@@ -4,7 +4,7 @@ import { AppShell } from "@/components/AppShell";
 import { useApp } from "@/store/app";
 import { t } from "@/i18n/dict";
 import { severityClasses, severityLabel } from "@/lib/severity";
-import { simplifyExplanation } from "@/server/ai.functions";
+// import { simplifyExplanation } from "@/server/ai.functions";
 import { loadAllRules } from "@/engine/rules";
 import { listAssessments, updateAssessment, type SimplifiedAI, type AssessmentRecord } from "@/storage/db";
 import { FollowUpPlanner } from "@/components/FollowUpPlanner";
@@ -96,18 +96,25 @@ function ResultPage() {
     }
     setSimplifying(true);
     try {
-      const out = await simplifyExplanation({
-        data: {
-          severity: result.triage,
-          urgency: result.urgency,
-          recommended_action: result.recommended_action,
-          reasoning: result.reasoning,
-          warning_signs: result.warning_signs,
-          explanations: result.explanations,
-          patient_category: result.patient_category,
-          language: lang,
+      const out = {
+        ok: true,
+        simplified: {
+          headline:
+            result.triage === "Emergency"
+              ? "Immediate medical escalation recommended."
+              : result.triage === "PHC Referral"
+                ? "Medical evaluation is recommended based on current findings."
+                : "Patient appears stable and can continue home monitoring.",
+
+          why: result.reasoning || [],
+
+          warning_signs: result.warning_signs || [],
+
+          recommended_action:
+            result.recommended_action ||
+            "Monitor and reassess if symptoms worsen.",
         },
-      });
+      };
       if (out.ok && out.simplified) {
         const payload = out.simplified as SimplifiedAI;
         setSimplified(payload);
@@ -160,11 +167,10 @@ function ResultPage() {
               if (!result || !input) return;
               downloadTriageSlip({ input, result, record, lang });
             }}
-            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm min-h-[44px] shadow-sm ${
-              result.triage === "Home Care"
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm min-h-[44px] shadow-sm ${result.triage === "Home Care"
                 ? "bg-card border border-border text-foreground hover:bg-accent"
                 : "bg-primary text-primary-foreground hover:opacity-95"
-            }`}
+              }`}
             aria-label={t(lang, "generate_pdf_slip")}
           >
             <FileDown className="size-4" />

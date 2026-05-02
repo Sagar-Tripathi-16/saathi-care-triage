@@ -127,6 +127,8 @@ type Dict = {
   history_empty_hint: string;
   queue_empty_hint: string;
   offline_banner: string;
+  generate_pdf_slip: string;
+  pdf_slip_hint: string;
 };
 
 const en: Dict = {
@@ -245,6 +247,8 @@ const en: Dict = {
   history_empty_hint: "Completed assessments are saved on this device for quick reference.",
   queue_empty_hint: "Emergency cases (last 7 days), pending follow-ups, and high-risk pregnancies will appear here.",
   offline_banner: "You're offline — triage and history work fully. AI simplification will resume online.",
+  generate_pdf_slip: "Generate PDF Slip",
+  pdf_slip_hint: "Printable triage slip for PHC referral. Works offline.",
 };
 
 const hi: Dict = {
@@ -363,6 +367,8 @@ const hi: Dict = {
   history_empty_hint: "पूर्ण किए गए मूल्यांकन इस डिवाइस पर सहेजे जाते हैं।",
   queue_empty_hint: "आपातकाल (पिछले 7 दिन), लंबित फ़ॉलो-अप और उच्च-जोखिम गर्भावस्था यहाँ दिखेंगे।",
   offline_banner: "आप ऑफ़लाइन हैं — त्रिअज और इतिहास पूरी तरह काम करते हैं। AI ऑनलाइन होने पर फिर से चलेगा।",
+  generate_pdf_slip: "PDF स्लिप बनाएँ",
+  pdf_slip_hint: "PHC रेफ़रल के लिए प्रिंट करने योग्य त्रिअज स्लिप। ऑफ़लाइन काम करता है।",
 };
 
 const kn: Dict = {
@@ -481,6 +487,8 @@ const kn: Dict = {
   history_empty_hint: "ಪೂರ್ಣಗೊಂಡ ಮೌಲ್ಯಮಾಪನಗಳು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಯುತ್ತವೆ.",
   queue_empty_hint: "ತುರ್ತು ಪ್ರಕರಣಗಳು (ಕಳೆದ 7 ದಿನ), ಬಾಕಿ ಫಾಲೋ-ಅಪ್ ಮತ್ತು ಅತಿ ಅಪಾಯದ ಗರ್ಭಧಾರಣೆಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.",
   offline_banner: "ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದೀರಿ — ಟ್ರಯಾಜ್ ಮತ್ತು ಇತಿಹಾಸ ಸಂಪೂರ್ಣ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತವೆ.",
+  generate_pdf_slip: "PDF ಸ್ಲಿಪ್ ರಚಿಸಿ",
+  pdf_slip_hint: "PHC ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಮುದ್ರಿಸಬಹುದಾದ ಟ್ರಯಾಜ್ ಸ್ಲಿಪ್. ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ.",
 };
 
 export const DICTS: Record<Lang, Dict> = { en, hi, kn };

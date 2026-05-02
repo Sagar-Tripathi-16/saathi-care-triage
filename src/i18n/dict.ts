@@ -247,6 +247,8 @@ const en: Dict = {
   history_empty_hint: "Completed assessments are saved on this device for quick reference.",
   queue_empty_hint: "Emergency cases (last 7 days), pending follow-ups, and high-risk pregnancies will appear here.",
   offline_banner: "You're offline — triage and history work fully. AI simplification will resume online.",
+  generate_pdf_slip: "Generate PDF Slip",
+  pdf_slip_hint: "Printable triage slip for PHC referral. Works offline.",
 };
 
 const hi: Dict = {

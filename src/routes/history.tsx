@@ -51,6 +51,7 @@ function HistoryPage() {
   const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
   const [items, setItems] = useState<AssessmentRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const overrideIds = useMemo(() => {
     const set = new Set<string>();
@@ -59,7 +60,9 @@ function HistoryPage() {
   }, []);
 
   async function refresh() {
-    setItems(await listAssessments());
+    const res = await listAssessments();
+    setItems(res);
+    setLoading(false);
   }
 
   useEffect(() => {

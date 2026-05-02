@@ -41,6 +41,7 @@ export const Route = createFileRoute("/result")({
 function ResultPage() {
   const lang = useApp((s) => s.lang);
   const result = useApp((s) => s.lastResult);
+  const input = useApp((s) => s.lastInput);
   const lastRecordId = useApp((s) => s.lastRecordId);
   const online = useApp((s) => s.online);
   const navigate = useNavigate();

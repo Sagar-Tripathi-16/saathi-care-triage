@@ -127,6 +127,8 @@ type Dict = {
   history_empty_hint: string;
   queue_empty_hint: string;
   offline_banner: string;
+  generate_pdf_slip: string;
+  pdf_slip_hint: string;
 };
 
 const en: Dict = {

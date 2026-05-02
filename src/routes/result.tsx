@@ -148,6 +148,30 @@ function ResultPage() {
           <div className="mt-3 text-sm sm:text-base opacity-95 leading-relaxed">{result.recommended_action}</div>
         </div>
 
+        {/* PDF triage slip — deterministic, offline */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-border bg-card p-3 shadow-sm">
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <FileDown className="size-4 text-primary shrink-0 mt-0.5" />
+            <span>{t(lang, "pdf_slip_hint")}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (!result || !input) return;
+              downloadTriageSlip({ input, result, record, lang });
+            }}
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm min-h-[44px] shadow-sm ${
+              result.triage === "Home Care"
+                ? "bg-card border border-border text-foreground hover:bg-accent"
+                : "bg-primary text-primary-foreground hover:opacity-95"
+            }`}
+            aria-label={t(lang, "generate_pdf_slip")}
+          >
+            <FileDown className="size-4" />
+            {t(lang, "generate_pdf_slip")}
+          </button>
+        </div>
+
         {/* Override banner */}
         {isOverride && (
           <div className="rounded-xl border border-severity-emergency/40 bg-severity-emergency-soft p-3 flex items-start gap-2.5 animate-fade-in">

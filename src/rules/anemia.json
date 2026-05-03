@@ -12,10 +12,28 @@
     ],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent maternal anemia referral",
-    "reasoning": ["Severe anemia risk detected during pregnancy"],
-    "warning_signs": ["Maternal emergency risk"],
-    "explanation_template": "The patient shows signs of severe anemia during pregnancy."
+    "recommended_action": "Urgent maternal anemia emergency referral — severe anemia with symptoms requires immediate treatment",
+    "reasoning": ["Severe anemia with weakness during pregnancy — maternal emergency risk"],
+    "warning_signs": ["Severe anemia (Hb < 7g/dL) with weakness during pregnancy may indicate cardiac decompensation risk. Urgent blood transfusion evaluation may be required."],
+    "explanation_template": "The patient shows signs of severe anemia during pregnancy (Hb below 7 g/dL with severe weakness). This is a maternal emergency requiring urgent hospital evaluation."
+  },
+  {
+    "rule_id": "ANEMIA_004",
+    "module": "anemia",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "hemoglobin", "operator": "<", "value": 7 },
+      { "field": "pregnant", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent maternal emergency referral — hemoglobin below 7 g/dL in pregnancy is a clinical emergency regardless of symptoms",
+    "reasoning": ["Severe anemia detected during pregnancy (Hb < 7 g/dL) — maternal clinical emergency"],
+    "warning_signs": ["Hemoglobin below 7 g/dL in pregnancy is a high-risk threshold associated with maternal cardiac compromise and fetal growth restriction. Hospital evaluation and possible transfusion required."],
+    "explanation_template": "Hemoglobin below 7 g/dL during pregnancy is a clinical emergency. Even without overt symptoms, severe anemia poses serious risk to both mother and fetus. Urgent hospital referral for evaluation and possible blood transfusion is required."
   },
   {
     "rule_id": "ANEMIA_002",
@@ -27,9 +45,27 @@
     "conditions": [{ "field": "hemoglobin", "operator": "between", "value": [7, 10] }],
     "trigger_logic": "ALL",
     "urgency": "Within 24 hours",
-    "recommended_action": "Medical anemia evaluation recommended",
-    "reasoning": ["Low hemoglobin detected"],
-    "warning_signs": ["Possible anemia"],
-    "explanation_template": "The patient has reduced hemoglobin requiring evaluation."
+    "recommended_action": "Medical anemia evaluation recommended — hemoglobin in the moderate anemia range",
+    "reasoning": ["Low hemoglobin (7–10 g/dL) — moderate anemia detected"],
+    "warning_signs": ["Hemoglobin between 7–10 g/dL indicates moderate anemia. Treatment and further evaluation are recommended."],
+    "explanation_template": "The patient has reduced hemoglobin (7–10 g/dL) indicating moderate anemia. Further medical evaluation and treatment are recommended."
+  },
+  {
+    "rule_id": "ANEMIA_003",
+    "module": "anemia",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "weakness", "operator": "==", "value": "moderate" },
+      { "field": "hemoglobin", "operator": "between", "value": [7, 10] }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Anemia evaluation recommended — symptomatic moderate anemia",
+    "reasoning": ["Moderate weakness combined with moderate anemia — symptomatic anemia detected"],
+    "warning_signs": ["Symptomatic anemia (weakness + low Hb) requires treatment to prevent deterioration"],
+    "explanation_template": "Moderate weakness combined with reduced hemoglobin suggests symptomatic anemia requiring evaluation and treatment."
   }
 ]

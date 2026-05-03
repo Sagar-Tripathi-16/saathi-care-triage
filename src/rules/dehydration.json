@@ -4,7 +4,7 @@
     "module": "dehydration",
     "priority": 1,
     "severity": "Emergency",
-    "rule_type": "multi_condition",
+    "rule_type": "override_rule",
     "patient_category": ["universal"],
     "conditions": [
       { "field": "unable_to_drink", "operator": "==", "value": true },
@@ -14,9 +14,43 @@
     "minimum_conditions_required": 2,
     "trigger_logic": "MINIMUM_MATCH",
     "urgency": "Immediate",
-    "recommended_action": "Urgent dehydration management",
-    "reasoning": ["Multiple severe dehydration indicators detected"],
-    "warning_signs": ["Critical dehydration risk"],
-    "explanation_template": "The patient shows multiple signs of severe dehydration."
+    "recommended_action": "Urgent hospital referral — severe dehydration signs require immediate IV fluid management",
+    "reasoning": ["Multiple severe dehydration danger signs detected — critical dehydration emergency"],
+    "warning_signs": ["Severe dehydration can cause organ failure. Urgent IV fluid replacement is required. Do not delay transfer."],
+    "explanation_template": "The patient shows multiple signs of severe dehydration (unable to drink, persistent vomiting, or confusion). This is a medical emergency requiring immediate IV fluid management at a hospital."
+  },
+  {
+    "rule_id": "DEHY_002",
+    "module": "dehydration",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "unable_to_drink", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — inability to drink fluids requires assessment",
+    "reasoning": ["Patient unable to drink fluids — dehydration risk"],
+    "warning_signs": ["Inability to drink increases risk of dehydration, especially in children and pregnant women"],
+    "explanation_template": "The patient is unable to drink fluids, increasing the risk of dehydration. Medical evaluation is recommended."
+  },
+  {
+    "rule_id": "DEHY_003",
+    "module": "dehydration",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "vomiting_everything", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — persistent vomiting prevents hydration",
+    "reasoning": ["Persistent vomiting of everything ingested — dehydration risk"],
+    "warning_signs": ["Inability to keep any fluids down leads to rapid dehydration, especially dangerous in children"],
+    "explanation_template": "The patient is vomiting everything they consume, making oral hydration impossible. Medical evaluation is recommended."
   }
 ]

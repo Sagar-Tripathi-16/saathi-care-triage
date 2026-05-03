@@ -9,10 +9,10 @@
     "conditions": [{ "field": "convulsions", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent hospital referral",
-    "reasoning": ["Convulsions detected"],
-    "warning_signs": ["Severe neurological emergency"],
-    "explanation_template": "The patient has convulsions requiring immediate medical attention."
+    "recommended_action": "Urgent hospital referral — convulsions require immediate emergency care",
+    "reasoning": ["Active convulsions detected — neurological emergency"],
+    "warning_signs": ["Convulsions indicate a critical neurological emergency requiring immediate hospital transfer"],
+    "explanation_template": "The patient has convulsions (fits/seizures) requiring immediate emergency medical attention. Do not delay transport."
   },
   {
     "rule_id": "DANGER_002",
@@ -24,10 +24,10 @@
     "conditions": [{ "field": "unconscious", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent emergency referral",
-    "reasoning": ["Loss of consciousness detected"],
-    "warning_signs": ["Critical emergency"],
-    "explanation_template": "The patient is unconscious and requires immediate medical care."
+    "recommended_action": "Urgent emergency referral — unconscious patient requires immediate hospital care",
+    "reasoning": ["Loss of consciousness detected — critical emergency"],
+    "warning_signs": ["Unconsciousness is a life-threatening sign. Maintain airway and arrange immediate transfer."],
+    "explanation_template": "The patient is unconscious (unresponsive) and requires immediate emergency medical care. Place in recovery position and call for emergency transport."
   },
   {
     "rule_id": "DANGER_003",
@@ -39,9 +39,9 @@
     "conditions": [{ "field": "unable_to_feed", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent pediatric evaluation",
-    "reasoning": ["Child unable to feed"],
-    "warning_signs": ["Severe pediatric danger sign"],
-    "explanation_template": "The child is unable to feed and requires urgent medical evaluation."
+    "recommended_action": "Urgent pediatric evaluation — child unable to feed is a WHO danger sign",
+    "reasoning": ["Child unable to feed — WHO danger sign detected"],
+    "warning_signs": ["Inability to feed in an infant or young child is a critical WHO IMCI danger sign indicating serious illness"],
+    "explanation_template": "The child is unable to feed, which is a critical WHO danger sign. Urgent pediatric medical evaluation is required."
   }
 ]

@@ -9,17 +9,17 @@
     "conditions": [{ "field": "severe_chest_pain", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent hospital referral",
-    "reasoning": ["Severe chest pain detected"],
-    "warning_signs": ["Possible cardiac emergency"],
-    "explanation_template": "Severe chest pain requires urgent medical evaluation."
+    "recommended_action": "Urgent hospital referral — possible cardiac emergency",
+    "reasoning": ["Severe chest pain detected — possible cardiac emergency"],
+    "warning_signs": ["Severe chest pain may indicate a heart attack, pulmonary embolism, or other life-threatening cardiac condition"],
+    "explanation_template": "Severe chest pain requires urgent emergency evaluation. This may indicate a cardiac emergency. Do not delay transport."
   },
   {
     "rule_id": "ADULT_002",
     "module": "adult_emergency",
     "priority": 1,
     "severity": "Emergency",
-    "rule_type": "combination_rule",
+    "rule_type": "override_rule",
     "patient_category": ["adult", "maternal"],
     "conditions": [
       { "field": "severe_chest_pain", "operator": "==", "value": true },
@@ -27,24 +27,42 @@
     ],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent cardiac and respiratory evaluation",
-    "reasoning": ["Chest pain with severe breathlessness detected"],
-    "warning_signs": ["Possible cardiac or respiratory emergency"],
-    "explanation_template": "Chest pain with severe breathing difficulty requires urgent care."
+    "recommended_action": "Urgent cardiac and respiratory emergency referral",
+    "reasoning": ["Severe chest pain with severe breathlessness — combined cardiorespiratory emergency"],
+    "warning_signs": ["Chest pain combined with severe breathing difficulty indicates a high-risk cardiac or pulmonary emergency"],
+    "explanation_template": "Severe chest pain combined with severe breathing difficulty is a high-priority cardiac and respiratory emergency requiring immediate hospital transfer."
   },
   {
     "rule_id": "ADULT_003",
     "module": "adult_emergency",
     "priority": 1,
     "severity": "Emergency",
-    "rule_type": "single_condition",
+    "rule_type": "override_rule",
     "patient_category": ["adult", "maternal"],
     "conditions": [{ "field": "fainting", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent emergency evaluation",
-    "reasoning": ["Fainting episode detected"],
-    "warning_signs": ["Possible severe systemic issue"],
-    "explanation_template": "Loss of consciousness may indicate a serious medical condition."
+    "recommended_action": "Urgent emergency evaluation — fainting episode indicates possible serious systemic illness",
+    "reasoning": ["Fainting episode (syncope) detected — possible serious systemic illness"],
+    "warning_signs": ["Fainting may indicate cardiac arrhythmia, severe anemia, internal bleeding, or other serious conditions"],
+    "explanation_template": "The patient has fainted (lost consciousness briefly). This may indicate a serious underlying condition such as cardiac arrhythmia, severe dehydration, or internal bleeding. Urgent evaluation is required."
+  },
+  {
+    "rule_id": "ADULT_004",
+    "module": "adult_emergency",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["adult"],
+    "conditions": [
+      { "field": "severe_headache", "operator": "==", "value": true },
+      { "field": "blurred_vision", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — severe headache with visual disturbance may indicate hypertensive urgency",
+    "reasoning": ["Severe headache with blurred vision detected in non-pregnant patient — possible hypertensive urgency"],
+    "warning_signs": ["Possible hypertensive urgency or neurological complication", "Seek evaluation if headache worsens, vision deteriorates, or new symptoms develop"],
+    "explanation_template": "Severe headache combined with blurred vision may indicate hypertensive urgency or a neurological issue. Medical evaluation is recommended promptly."
   }
 ]

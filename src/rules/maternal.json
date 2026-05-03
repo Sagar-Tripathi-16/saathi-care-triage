@@ -9,17 +9,17 @@
     "conditions": [{ "field": "heavy_bleeding", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent maternal referral",
-    "reasoning": ["Heavy pregnancy bleeding detected"],
-    "warning_signs": ["Maternal emergency risk"],
-    "explanation_template": "Heavy bleeding during pregnancy requires urgent medical care."
+    "recommended_action": "Urgent maternal hospital referral — heavy bleeding in pregnancy is a critical emergency",
+    "reasoning": ["Heavy vaginal bleeding during pregnancy — maternal emergency"],
+    "warning_signs": ["Heavy bleeding in pregnancy may indicate placenta previa, placental abruption, or postpartum hemorrhage — life-threatening without immediate treatment"],
+    "explanation_template": "Heavy bleeding during pregnancy is a maternal emergency. Arrange immediate transport to a hospital with obstetric care. Keep the patient lying down and calm."
   },
   {
     "rule_id": "MAT_002",
     "module": "maternal",
     "priority": 1,
     "severity": "Emergency",
-    "rule_type": "combination_rule",
+    "rule_type": "override_rule",
     "patient_category": ["maternal"],
     "conditions": [
       { "field": "severe_headache", "operator": "==", "value": true },
@@ -27,10 +27,10 @@
     ],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent maternal evaluation",
-    "reasoning": ["Severe headache with blurred vision detected"],
-    "warning_signs": ["Possible severe maternal complication"],
-    "explanation_template": "Severe headache with vision problems requires urgent medical evaluation."
+    "recommended_action": "Urgent maternal emergency referral — severe headache with blurred vision indicates possible severe pre-eclampsia",
+    "reasoning": ["Severe headache with blurred vision in pregnancy — possible severe pre-eclampsia or eclampsia"],
+    "warning_signs": ["Severe headache + blurred vision in pregnancy are warning signs of severe pre-eclampsia or impending eclampsia — immediate hospital transfer required"],
+    "explanation_template": "Severe headache combined with blurred vision during pregnancy indicates a high risk of severe pre-eclampsia or eclampsia — a life-threatening condition. Immediate hospital transfer is required."
   },
   {
     "rule_id": "MAT_003",
@@ -42,10 +42,10 @@
     "conditions": [{ "field": "reduced_fetal_movement", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Within 24 hours",
-    "recommended_action": "Maternal evaluation recommended",
-    "reasoning": ["Reduced fetal movement reported"],
-    "warning_signs": ["Possible fetal distress"],
-    "explanation_template": "Reduced fetal movement may require urgent evaluation."
+    "recommended_action": "Maternal evaluation recommended — reduced fetal movement requires monitoring",
+    "reasoning": ["Reduced fetal movement reported — possible fetal distress"],
+    "warning_signs": ["Reduced fetal movement may indicate fetal distress. Count kicks and seek evaluation within 24 hours."],
+    "explanation_template": "Reduced fetal movement may indicate fetal distress. The patient should count fetal kicks and attend evaluation within 24 hours."
   },
   {
     "rule_id": "MAT_004",
@@ -57,9 +57,63 @@
     "conditions": [{ "field": "fetal_movement_stopped", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent maternal referral",
-    "reasoning": ["Fetal movement stopped"],
-    "warning_signs": ["Possible fetal emergency"],
-    "explanation_template": "Stopped fetal movement requires urgent medical attention."
+    "recommended_action": "Urgent maternal referral — cessation of fetal movement is an emergency",
+    "reasoning": ["Fetal movement has completely stopped — possible fetal emergency"],
+    "warning_signs": ["Complete cessation of fetal movement is an emergency sign of possible fetal distress or fetal death. Immediate hospital evaluation required."],
+    "explanation_template": "Complete cessation of fetal movement requires immediate emergency evaluation. Arrange hospital transfer without delay."
+  },
+  {
+    "rule_id": "MAT_005",
+    "module": "maternal",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "headache", "operator": "==", "value": "persistent" },
+      { "field": "pregnant", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Maternal evaluation recommended for persistent headache during pregnancy",
+    "reasoning": ["Persistent headache during pregnancy detected — possible pre-eclampsia risk"],
+    "warning_signs": ["Persistent headache in pregnancy may be an early warning sign of pre-eclampsia — monitor blood pressure and seek evaluation"],
+    "explanation_template": "Persistent headache during pregnancy may indicate developing pre-eclampsia. Blood pressure evaluation and clinical assessment are recommended."
+  },
+  {
+    "rule_id": "MAT_006",
+    "module": "maternal",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "blurred_vision", "operator": "==", "value": true },
+      { "field": "pregnant", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Urgent maternal evaluation for visual disturbance during pregnancy",
+    "reasoning": ["Blurred vision during pregnancy detected — possible pre-eclampsia indicator"],
+    "warning_signs": ["Blurred vision in pregnancy is a warning sign for pre-eclampsia. Blood pressure should be checked urgently."],
+    "explanation_template": "Blurred vision during pregnancy is a warning sign for pre-eclampsia and requires prompt blood pressure evaluation and clinical assessment."
+  },
+  {
+    "rule_id": "MAT_007",
+    "module": "maternal",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["maternal"],
+    "conditions": [
+      { "field": "blurred_vision", "operator": "==", "value": true },
+      { "field": "headache", "operator": "in", "value": ["mild", "persistent"] }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Maternal evaluation recommended — headache with visual disturbance in pregnancy raises pre-eclampsia concern",
+    "reasoning": ["Headache combined with blurred vision during pregnancy — elevated pre-eclampsia risk"],
+    "warning_signs": ["Headache with visual disturbance in pregnancy is a combined warning sign for pre-eclampsia requiring evaluation"],
+    "explanation_template": "Headache combined with blurred vision during pregnancy raises significant concern for pre-eclampsia. Clinical evaluation and blood pressure measurement are recommended."
   }
 ]

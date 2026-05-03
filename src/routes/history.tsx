@@ -3,61 +3,37 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useApp } from "@/store/app";
 import { t } from "@/i18n/dict";
-import { severityClasses, severityLabel } from "@/lib/severity";
-import {
-  clearAssessments,
-  listAssessments,
-  matchPatientHistory,
-  markFollowUpComplete,
-  type AssessmentRecord,
-} from "@/storage/db";
-import { loadAllRules } from "@/engine/rules";
+import { clearAssessments, listAssessments, type AssessmentRecord } from "@/storage/db";
 import { SEVERITY_LEVEL } from "@/engine/classifier";
 import type { Severity } from "@/engine/types";
 import {
-  Trash2,
-  ChevronDown,
-  AlertTriangle,
-  RotateCcw,
-  Activity,
-  Calendar,
-  HeartPulse,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  CheckCircle2,
-  Play,
+  Trash2, RotateCcw, Activity, Calendar, HeartPulse, User, MapPin, 
+  ChevronRight, ArrowRight, ArrowDownRight, ArrowUpRight, CheckCircle2, ShieldCheck, Clock
 } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
-      { title: "History — Arogya Saathi" },
-      { name: "description", content: "Past triage assessments saved on this device." },
+      { title: "Patient Journeys — Arogya Saathi" },
+      { name: "description", content: "Longitudinal patient care histories and assessment progression." },
     ],
   }),
   component: HistoryPage,
 });
+
+function formatTime(ts: number) {
+  return new Date(ts).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+}
 
 function HistoryPage() {
   const lang = useApp((s) => s.lang);
   const setLast = useApp((s) => s.setLast);
   const setPendingPreviousId = useApp((s) => s.setPendingPreviousId);
   const navigate = useNavigate();
+  
   const [items, setItems] = useState<AssessmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const overrideIds = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of loadAllRules()) if (r.rule_type === "override_rule") set.add(r.rule_id);
-    return set;
-  }, []);
 
   async function refresh() {
     const res = await listAssessments();
@@ -69,29 +45,20 @@ function HistoryPage() {
     refresh();
   }, []);
 
-  // Compute trend (vs prior assessment for the same patient) for each item
-  const trends = useMemo(() => {
-    const map = new Map<number, { prev: AssessmentRecord; delta: number } | null>();
-    for (const it of items) {
-      if (it.id == null) continue;
-      const prior = matchPatientHistory(items, it.patient_name, it.age, it.created_at);
-      const prev = prior[0]; // already newest-first
-      if (!prev) {
-        map.set(it.id, null);
-        continue;
-      }
-      const curLevel = SEVERITY_LEVEL[it.severity as Severity] ?? 0;
-      const prevLevel = SEVERITY_LEVEL[prev.severity as Severity] ?? 0;
-      map.set(it.id, { prev, delta: curLevel - prevLevel });
+  const patientJourneys = useMemo(() => {
+    const journeys = new Map<string, AssessmentRecord[]>();
+    for (const r of items) {
+      const key = `${r.patient_name.toLowerCase()}_${r.age}`;
+      if (!journeys.has(key)) journeys.set(key, []);
+      journeys.get(key)!.push(r);
     }
-    return map;
+    // Sort each journey oldest to newest internally
+    const sortedJourneys = Array.from(journeys.values()).map(journey => 
+      journey.sort((a,b) => a.created_at - b.created_at)
+    );
+    // Sort all journeys by the latest assessment descending
+    return sortedJourneys.sort((a,b) => b[b.length-1].created_at - a[a.length-1].created_at);
   }, [items]);
-
-  const today = useMemo(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d.getTime();
-  }, []);
 
   async function onClear() {
     if (typeof window !== "undefined" && !window.confirm(t(lang, "confirm_clear"))) return;
@@ -104,311 +71,176 @@ function HistoryPage() {
     navigate({ to: "/result" });
   }
 
-  async function onMarkComplete(rec: AssessmentRecord) {
-    if (rec.id == null) return;
-    await markFollowUpComplete(rec.id);
-    refresh();
-  }
-
   function onStartRevisit(rec: AssessmentRecord) {
     if (rec.id != null) setPendingPreviousId(rec.id);
     navigate({ to: "/" });
   }
 
-  return (
-    <AppShell>
-      <div className="flex items-center justify-between mb-4 gap-3">
-        <h1 className="text-xl font-semibold text-foreground">{t(lang, "nav_history")}</h1>
-        {items.length > 0 && (
-          <button
-            onClick={onClear}
-            className="text-sm text-destructive flex items-center gap-1 hover:underline min-h-[36px]"
-          >
-            <Trash2 className="size-4" /> {t(lang, "clear_history")}
-          </button>
-        )}
-      </div>
+  const PatientTimeline = ({ journey }: { journey: AssessmentRecord[] }) => {
+    const latest = journey[journey.length - 1];
+    const isHR = !!latest.high_risk_pregnancy?.flagged;
 
-      {loading ? (
-        <div className="space-y-3" aria-busy="true" aria-label={t(lang, "loading")}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="bg-card border border-border border-l-4 border-l-muted rounded-2xl p-4 shadow-sm">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-5 w-20 rounded-md bg-muted animate-pulse" />
-                <div className="h-4 w-32 rounded bg-muted animate-pulse" />
-              </div>
-              <div className="h-3 w-1/2 rounded bg-muted/70 animate-pulse" />
+    return (
+      <div className="bg-white/86 backdrop-blur-md border border-slate-200/70 rounded-[22px] p-6 sm:p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] print:break-inside-avoid print:border-black print:shadow-none mb-8">
+        {/* Patient Header */}
+        <div className="flex items-center justify-between mb-6 pb-6 border-b border-border/50">
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <User className="size-6" />
             </div>
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center animate-fade-in">
-          <div className="mx-auto mb-3 size-14 rounded-full bg-accent grid place-items-center">
-            <Activity className="size-7 text-primary" />
+            <div>
+              <div className="font-bold text-xl text-foreground flex items-center gap-2">
+                {latest.patient_name !== "—" ? latest.patient_name : t(lang, "history_unknown_patient")}
+                <span className="text-sm font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                  {latest.age}y
+                </span>
+                {isHR && <HeartPulse className="size-5 text-severity-emergency" />}
+              </div>
+              <div className="text-sm text-muted-foreground font-medium flex items-center gap-2 mt-1">
+                <span className="flex items-center gap-1"><MapPin className="size-3.5" /> {latest.category}</span>
+                <span>•</span>
+                <span>{journey.length} {t(lang, "history_assessments")}</span>
+              </div>
+            </div>
           </div>
-          <p className="text-foreground font-medium text-sm">{t(lang, "no_history")}</p>
-          <p className="text-muted-foreground text-xs mt-1.5 leading-relaxed max-w-sm mx-auto">
-            {t(lang, "history_empty_hint")}
-          </p>
+          <button 
+            onClick={() => onStartRevisit(latest)}
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-sm font-bold transition-colors print:hidden"
+          >
+            <RotateCcw className="size-4" /> {t(lang, "history_start_reassessment")}
+          </button>
         </div>
-      ) : (
-        <Accordion type="multiple" className="space-y-3">
-          {items.map((it) => {
-            const sev = it.severity as Severity;
-            const sevCls = severityClasses(sev);
-            const borderClr =
-              sev === "Emergency"
-                ? "border-l-severity-emergency"
-                : sev === "PHC Referral"
-                  ? "border-l-severity-phc"
-                  : "border-l-severity-home";
-            const isOverride =
-              !!it.result?.override_triggered ||
-              it.triggered_rules.some((id) => overrideIds.has(id));
-            const isHR = !!it.high_risk_pregnancy?.flagged;
-            const trend = it.id != null ? trends.get(it.id) : null;
-            const fu = it.follow_up;
-            const fuPending = !!fu && !it.follow_up_completed_at;
-            const fuDueLabel: { label: string; tone: "overdue" | "today" | "scheduled" } | null = (() => {
-              if (!fuPending || !fu) return null;
-              const dueDay = (() => { const d = new Date(fu.due_date); d.setHours(0,0,0,0); return d.getTime(); })();
-              if (dueDay < today) return { label: t(lang, "follow_up_overdue"), tone: "overdue" };
-              if (dueDay === today) return { label: t(lang, "follow_up_today"), tone: "today" };
-              return { label: t(lang, "follow_up_due"), tone: "scheduled" };
-            })();
 
-            const vitals: Array<[string, string]> = [];
-            const inp = it.input;
-            if (inp.temperature != null) vitals.push([t(lang, "temperature_c"), `${inp.temperature}`]);
-            if (inp.spo2 != null) vitals.push([t(lang, "spo2"), `${inp.spo2}`]);
-            if (inp.hemoglobin != null) vitals.push([t(lang, "hemoglobin"), `${inp.hemoglobin}`]);
-            if (inp.respiratory_rate != null) vitals.push([t(lang, "resp_rate"), `${inp.respiratory_rate}`]);
-            if (inp.fever_duration_days != null) vitals.push([t(lang, "fever_duration"), `${inp.fever_duration_days}`]);
+        {/* Timeline */}
+        <div className="relative pl-6 sm:pl-8 space-y-10 before:absolute before:inset-0 before:ml-6 sm:before:ml-8 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[3px] before:bg-slate-200">
+          {journey.map((rec, i) => {
+            const isFirst = i === 0;
+            const prev = isFirst ? null : journey[i - 1];
+            
+            let TrendIcon = ArrowRight;
+            let trendColor = "text-muted-foreground";
+            if (prev) {
+              const curLevel = SEVERITY_LEVEL[rec.severity as Severity] ?? 0;
+              const prevLevel = SEVERITY_LEVEL[prev.severity as Severity] ?? 0;
+              if (curLevel > prevLevel) { TrendIcon = ArrowUpRight; trendColor = "text-severity-emergency"; }
+              else if (curLevel < prevLevel) { TrendIcon = ArrowDownRight; trendColor = "text-severity-home"; }
+            }
 
+            const isEmergency = rec.severity === "Emergency";
+            const isPHC = rec.severity === "PHC Referral";
+            
             return (
-              <AccordionItem
-                key={it.id}
-                value={String(it.id)}
-                className={`bg-card border border-border border-l-4 ${borderClr} rounded-2xl overflow-hidden shadow-sm`}
-              >
-                <AccordionTrigger className="px-4 py-3 hover:no-underline [&[data-state=open]>svg]:rotate-180 gap-2">
-                  <div className="flex-1 flex items-center gap-3 min-w-0 text-left">
-                    <span className={`px-2 py-1 rounded-md text-[11px] font-bold whitespace-nowrap tracking-wide ${sevCls.chip}`}>
-                      {severityLabel(sev, lang)}
-                    </span>
-                    {isOverride && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
-                        <AlertTriangle className="size-3" /> {t(lang, "override_badge")}
+              <div key={rec.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                <div className={`absolute left-0 sm:left-0 size-4 rounded-full border-[3px] border-white -translate-x-[6.5px] z-10 ${
+                  isEmergency ? 'bg-severity-emergency shadow-[0_0_12px_rgba(239,68,68,0.5)]' : isPHC ? 'bg-severity-phc shadow-[0_0_12px_rgba(245,158,11,0.5)]' : 'bg-[#0F8B8D] shadow-[0_0_12px_rgba(15,139,141,0.5)]'
+                }`} />
+                
+                <button 
+                  onClick={() => onReopen(rec)}
+                  className="w-full text-left bg-white border border-slate-200/60 rounded-[18px] p-5 ml-6 sm:ml-8 shadow-[0_4px_14px_rgba(15,23,42,0.03)] hover:shadow-[0_8px_24px_rgba(15,23,42,0.06)] hover:-translate-y-[2px] transition-all duration-200 ease-out group-hover:border-[#0F8B8D]/30 print:border-black/20 print:ml-0 print:pl-8"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider ${
+                        isEmergency ? 'bg-severity-emergency text-severity-emergency-foreground' : 
+                        isPHC ? 'bg-severity-phc text-severity-phc-foreground' : 
+                        'bg-severity-home text-severity-home-foreground'
+                      }`}>
+                        {rec.severity}
                       </span>
-                    )}
-                    {isHR && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-severity-emergency-soft text-severity-emergency border border-severity-emergency/30">
-                        <HeartPulse className="size-3" /> {t(lang, "high_risk_pregnancy")}
-                      </span>
-                    )}
-                    {fuDueLabel && (
-                      <span
-                        className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium ${
-                          fuDueLabel.tone === "overdue"
-                            ? "bg-severity-emergency-soft text-severity-emergency"
-                            : fuDueLabel.tone === "today"
-                              ? "bg-severity-phc-soft text-severity-phc-foreground"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        <Calendar className="size-3" /> {fuDueLabel.label}
-                      </span>
-                    )}
-                    {trend && (
-                      <span
-                        className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[11px] font-medium ${
-                          trend.delta > 0
-                            ? "bg-severity-emergency-soft text-severity-emergency"
-                            : trend.delta < 0
-                              ? "bg-severity-home-soft text-severity-home"
-                              : "bg-muted text-muted-foreground"
-                        }`}
-                        title={`${t(lang, "trend_previous")}: ${severityLabel(trend.prev.severity as Severity, lang)}`}
-                      >
-                        {trend.delta > 0 ? (
-                          <TrendingUp className="size-3" />
-                        ) : trend.delta < 0 ? (
-                          <TrendingDown className="size-3" />
-                        ) : (
-                          <Minus className="size-3" />
-                        )}
-                        {trend.delta > 0
-                          ? t(lang, "trend_escalated")
-                          : trend.delta < 0
-                            ? t(lang, "trend_deescalated")
-                            : t(lang, "trend_stable")}
-                      </span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-foreground truncate text-sm">
-                        {it.patient_name || "—"}
-                        {typeof it.age === "number" && (
-                          <span className="text-muted-foreground font-normal"> · {it.age}y</span>
-                        )}
-                        {it.pregnant && (
-                          <span className="text-muted-foreground font-normal"> · {t(lang, "pregnant")}</span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground truncate">
-                        {new Date(it.created_at).toLocaleString()} · {it.urgency}
-                      </div>
+                      {!isFirst && (
+                        <div className={`flex items-center gap-1 text-[11px] font-bold uppercase ${trendColor}`}>
+                          <TrendIcon className="size-3" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                      <Clock className="size-3.5" /> {formatTime(rec.created_at)}
                     </div>
                   </div>
-                  <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform" />
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4 pt-0">
-                  <div className="space-y-3 text-sm">
-                    <div className="rounded-lg bg-muted/50 p-3">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1 font-medium">
-                        {t(lang, "recommended_action")}
-                      </div>
-                      <p className="text-foreground">{it.result.recommended_action}</p>
-                    </div>
-
-                    {vitals.length > 0 ? (
-                      <div>
-                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5 font-medium">
-                          {t(lang, "vitals")}
-                        </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {vitals.map(([k, v]) => (
-                            <div key={k} className="rounded-md border border-border bg-background px-2 py-1.5">
-                              <div className="text-[10px] text-muted-foreground">{k}</div>
-                              <div className="font-semibold text-foreground">{v}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground italic">{t(lang, "no_vitals")}</div>
-                    )}
-
-                    {(inp.symptoms?.length ?? 0) > 0 && (
-                      <div>
-                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5 font-medium">
-                          {t(lang, "selected_symptoms")}
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {(inp.symptoms ?? []).map((s) => (
-                            <span key={s} className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs">
-                              {s.replace(/_/g, " ")}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {it.pregnant && typeof inp.pregnancy_weeks === "number" && (
-                      <div className="text-xs text-muted-foreground">
-                        {t(lang, "pregnancy_weeks")}: <span className="text-foreground font-medium">{inp.pregnancy_weeks}</span>
-                      </div>
-                    )}
-
-                    {it.result.warning_signs.length > 0 && (
-                      <div>
-                        <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5 font-medium flex items-center gap-1">
-                          <AlertTriangle className="size-3" /> {t(lang, "warning_signs")}
-                        </div>
-                        <ul className="list-disc pl-5 space-y-0.5 text-foreground">
-                          {it.result.warning_signs.map((w, i) => <li key={i}>{w}</li>)}
-                        </ul>
-                      </div>
-                    )}
-
-                    {it.triggered_rules.length > 0 && (
-                      <div className="text-[11px] text-muted-foreground">
-                        {t(lang, "triggered_rules")}: <span className="font-mono">{it.triggered_rules.join(", ")}</span>
-                      </div>
-                    )}
-
-                    {it.ai_simplified && (
-                      <div className="rounded-lg bg-accent/40 border border-accent p-3 space-y-1.5">
-                        <div className="text-[11px] uppercase tracking-wide text-accent-foreground/70 font-medium">
-                          {t(lang, "ai_label")}
-                        </div>
-                        <p className="font-medium text-accent-foreground">{it.ai_simplified.payload.headline}</p>
-                        {it.ai_simplified.payload.why?.length > 0 && (
-                          <ul className="list-disc pl-5 text-accent-foreground space-y-0.5">
-                            {it.ai_simplified.payload.why.map((w, i) => <li key={i}>{w}</li>)}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-
-                    {trend && (
-                      <div className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-                        <span className="font-medium">{t(lang, "trend_previous")}:</span>{" "}
-                        {severityLabel(trend.prev.severity as Severity, lang)}
-                        <span className="mx-1.5">·</span>
-                        <span className="font-medium">{t(lang, "trend_current")}:</span>{" "}
-                        {severityLabel(it.severity as Severity, lang)}
-                      </div>
-                    )}
-
-                    {fu && (
-                      <div
-                        className={`rounded-lg border p-3 ${
-                          it.follow_up_completed_at
-                            ? "border-border bg-muted/30"
-                            : "border-severity-phc/40 bg-severity-phc-soft/40"
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-wide font-medium text-muted-foreground mb-1">
-                          <Calendar className="size-3" /> {t(lang, "follow_up")}
-                          {it.follow_up_completed_at && (
-                            <span className="ml-auto inline-flex items-center gap-1 normal-case text-severity-home">
-                              <CheckCircle2 className="size-3" /> {t(lang, "follow_up_completed")}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-foreground">
-                          <span className="font-medium">{new Date(fu.due_date).toLocaleDateString()}</span>
-                          {" · "}
-                          {t(lang, fu.revisit_reason as Parameters<typeof t>[1])}
-                        </div>
-                        {fu.notes && (
-                          <p className="text-muted-foreground mt-1 text-xs">{fu.notes}</p>
-                        )}
-                        {!it.follow_up_completed_at && (
-                          <div className="flex gap-2 mt-2">
-                            <button
-                              type="button"
-                              onClick={() => onMarkComplete(it)}
-                              className="text-xs inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-card text-foreground min-h-[36px]"
-                            >
-                              <CheckCircle2 className="size-3.5" /> {t(lang, "mark_complete")}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <button
-                        onClick={() => onReopen(it)}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium min-h-[44px]"
-                      >
-                        <RotateCcw className="size-4" /> {t(lang, "reopen_assessment")}
-                      </button>
-                      <button
-                        onClick={() => onStartRevisit(it)}
-                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-border bg-card text-foreground text-sm font-medium min-h-[44px]"
-                      >
-                        <Play className="size-4" /> {t(lang, "start_revisit")}
-                      </button>
-                    </div>
+                  
+                  <div className="text-sm font-medium text-foreground/90 leading-relaxed mb-3">
+                    {rec.result.recommended_action}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
+
+                  <div className="flex flex-wrap gap-2">
+                    {rec.triggered_rules.slice(0, 2).map((rule, idx) => (
+                      <span key={idx} className="text-[10px] font-semibold text-muted-foreground bg-card border border-border/60 px-2 py-0.5 rounded-md truncate max-w-[200px]">
+                        {rule}
+                      </span>
+                    ))}
+                    {rec.triggered_rules.length > 2 && (
+                      <span className="text-[10px] font-semibold text-muted-foreground bg-card border border-border/60 px-2 py-0.5 rounded-md">
+                        +{rec.triggered_rules.length - 2} more
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </div>
             );
           })}
-        </Accordion>
-      )}
+        </div>
+        
+        {/* Mobile action button */}
+        <button 
+          onClick={() => onStartRevisit(latest)}
+          className="mt-6 w-full sm:hidden flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-muted text-foreground text-sm font-bold print:hidden"
+        >
+          <RotateCcw className="size-4" /> {t(lang, "history_start_reassessment")}
+        </button>
+      </div>
+    );
+  };
+
+  return (
+    <AppShell>
+      <div className="space-y-8 pb-24 sm:pb-8 animate-fade-in max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-4 print:hidden">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-primary/10 text-primary rounded-xl">
+              <Activity className="size-5" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">Patient Journeys</h1>
+              <p className="text-sm text-muted-foreground">Longitudinal care histories and progression.</p>
+            </div>
+          </div>
+          {items.length > 0 && (
+            <button
+              onClick={onClear}
+              className="px-4 py-2 rounded-xl text-sm font-bold text-destructive hover:bg-destructive/10 transition-colors"
+            >
+              Clear Device History
+            </button>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="space-y-8">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0.3 }}
+                animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ duration: 2, repeat: Infinity, delay: i * 0.2, ease: "easeInOut" }}
+                className="h-56 bg-gradient-to-r from-card/30 via-muted/30 to-card/30 rounded-[1.5rem] border border-border/40 backdrop-blur-sm shadow-sm"
+              />
+            ))}
+          </div>
+        ) : patientJourneys.length === 0 ? (
+          <div className="text-center py-20 border border-slate-200/50 rounded-[32px] bg-slate-50/50 print:hidden shadow-[0_4px_14px_rgba(15,23,42,0.02)]">
+            <ShieldCheck className="size-12 text-slate-300 mx-auto mb-5" />
+            <h3 className="font-bold text-[#1E293B] text-xl mb-2">{t(lang, "history_no_records")}</h3>
+            <p className="text-base text-slate-500 max-w-sm mx-auto">{t(lang, "history_no_records_desc")}</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {patientJourneys.map((journey, i) => (
+              <PatientTimeline key={i} journey={journey} />
+            ))}
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 }

@@ -28,6 +28,10 @@ const SYMPTOM_ALIASES: Record<string, string> = {
   "less fetal movement": "reduced_fetal_movement",
   "indrawing": "chest_indrawing",
   "fast breathing": "fast_breathing",
+  "headache": "headache_mild",
+  "head pain": "headache_mild",
+  "weakness": "weakness_mild",
+  "weak": "weakness_mild",
 };
 
 const TRUE_VALUES = new Set(["yes", "y", "true", "1", "t", "haan", "haa"]);
@@ -81,12 +85,34 @@ export function normalize(input: PatientInput): PatientInput {
   out.symptoms = normSymptoms;
 
   // breathlessness severity: if symptoms include "severe_breathlessness" or string in field
-  if (normSymptoms.includes("severe_breathlessness")) {
+  if (normSymptoms.includes("severe_breathlessness") || normSymptoms.includes("breathlessness_severe")) {
     out.breathlessness = "severe";
+  } else if (normSymptoms.includes("breathlessness_moderate")) {
+    out.breathlessness = "moderate";
   } else if (typeof out.breathlessness === "string") {
     out.breathlessness = out.breathlessness.trim().toLowerCase();
-  } else if (out.breathlessness === true || normSymptoms.includes("breathlessness")) {
+  } else if (out.breathlessness === true || normSymptoms.includes("breathlessness") || normSymptoms.includes("breathlessness_mild")) {
     out.breathlessness = "mild";
+  }
+
+  // headache severity: maps UI symptom labels to rule fields
+  if (normSymptoms.includes("headache_severe")) {
+    out.severe_headache = true;
+    (out as Record<string, unknown>).headache = "severe";
+  } else if (normSymptoms.includes("headache_persistent")) {
+    (out as Record<string, unknown>).headache = "persistent";
+  } else if (normSymptoms.includes("headache_mild")) {
+    (out as Record<string, unknown>).headache = "mild";
+  }
+
+  // weakness severity: maps UI symptom labels to rule fields
+  if (normSymptoms.includes("weakness_severe")) {
+    out.severe_weakness = true;
+    (out as Record<string, unknown>).weakness = "severe";
+  } else if (normSymptoms.includes("weakness_moderate")) {
+    (out as Record<string, unknown>).weakness = "moderate";
+  } else if (normSymptoms.includes("weakness_mild")) {
+    (out as Record<string, unknown>).weakness = "mild";
   }
 
   // coerce known boolean symptom fields if provided as strings

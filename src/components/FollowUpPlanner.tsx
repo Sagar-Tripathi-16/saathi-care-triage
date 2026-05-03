@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, Save, CheckCircle2 } from "lucide-react";
+import { Calendar, Save, CheckCircle2, Clock, CalendarDays, Activity } from "lucide-react";
 import { t } from "@/i18n/dict";
 import { useApp } from "@/store/app";
 import { setFollowUp, type FollowUpPlan } from "@/storage/db";
@@ -60,66 +60,83 @@ export function FollowUpPlanner({ recordId, severity, highRisk, existing, onSave
     setTimeout(() => setSaved(false), 2500);
   }
 
-  const labelCls = "block text-sm font-medium text-foreground mb-1";
+  const labelCls = "block text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-2";
   const inputCls =
-    "w-full px-3 py-2.5 text-base sm:text-sm rounded-lg border border-input bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring min-h-[44px]";
+    "w-full h-[52px] px-4 rounded-[14px] bg-white/92 border border-slate-200 text-[#1E293B] text-[15px] font-medium placeholder:text-[#94A3B8] focus:outline-none focus:border-[#0F8B8D] focus:ring-[4px] focus:ring-[#0F8B8D]/12 transition-all duration-200 ease-out shadow-[0_2px_4px_rgba(0,0,0,0.02)]";
 
   return (
-    <section className="bg-card border border-border rounded-2xl p-4 shadow-sm">
-      <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-        <Calendar className="size-4 text-primary" /> {t(lang, "plan_follow_up")}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className={labelCls}>{t(lang, "follow_up_due")}</label>
-          <input
-            type="date"
-            className={inputCls}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            min={todayPlus(0)}
-          />
+    <div className="relative pl-6 sm:pl-8 border-l-[3px] border-border/50 pb-6 print-hidden">
+      {/* Timeline Node */}
+      <div className="absolute -left-[1.1rem] top-0 size-8 rounded-full bg-card border-[3px] border-primary flex items-center justify-center shadow-sm">
+        <Activity className="size-3.5 text-primary" />
+      </div>
+
+      <div className="bg-white/86 border border-slate-200/70 rounded-[22px] p-6 sm:p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur-md">
+        <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
+          {t(lang, "fu_ongoing_care")}
+        </h2>
+        <p className="text-sm text-muted-foreground mb-6">
+          {t(lang, "fu_schedule_hint")}
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>
+              <div className="flex items-center gap-1.5"><CalendarDays className="size-3.5" /> {t(lang, "fu_date_label")}</div>
+            </label>
+            <input
+              type="date"
+              className={inputCls}
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              min={todayPlus(0)}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>
+              <div className="flex items-center gap-1.5"><Activity className="size-3.5" /> {t(lang, "fu_focus_area")}</div>
+            </label>
+            <select
+              className={inputCls}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            >
+              {reasonKeys.map((k) => (
+                <option key={k} value={k}>
+                  {t(lang, k)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="sm:col-span-2">
+            <label className={labelCls}>{t(lang, "fu_clinical_notes")}</label>
+            <textarea
+              className={`${inputCls} min-h-[80px] h-auto py-4 resize-y`}
+              placeholder={t(lang, "fu_clinical_notes_ph")}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
         </div>
-        <div>
-          <label className={labelCls}>{t(lang, "revisit_reason")}</label>
-          <select
-            className={inputCls}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
+        
+        <div className="mt-6 flex items-center gap-4 flex-wrap pt-4 border-t border-border/40">
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving || recordId == null}
+            className="inline-flex items-center gap-2 h-[54px] px-[30px] rounded-2xl bg-[#0F8B8D] text-white text-[15px] font-bold shadow-[0_12px_24px_rgba(15,139,141,0.20)] hover:shadow-[0_16px_32px_rgba(15,139,141,0.25)] hover:-translate-y-[2px] transition-all duration-200 ease-out disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-[0_12px_24px_rgba(15,139,141,0.20)]"
           >
-            {reasonKeys.map((k) => (
-              <option key={k} value={k}>
-                {t(lang, k)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label className={labelCls}>{t(lang, "follow_up_notes")}</label>
-          <textarea
-            className={`${inputCls} min-h-[80px] py-2`}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-          />
+            <Save className="size-4" />
+            {saving ? t(lang, "fu_scheduling") : existing ? t(lang, "fu_update_schedule") : t(lang, "fu_schedule_followup_btn")}
+          </button>
+          {saved && (
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-severity-home animate-in fade-in slide-in-from-left-2">
+              <CheckCircle2 className="size-4" /> {t(lang, "fu_plan_secured")}
+            </span>
+          )}
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-3 flex-wrap">
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={saving || recordId == null}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 min-h-[40px]"
-        >
-          <Save className="size-4" />
-          {saving ? "…" : t(lang, "save_follow_up")}
-        </button>
-        {saved && (
-          <span className="inline-flex items-center gap-1 text-sm text-severity-home">
-            <CheckCircle2 className="size-4" /> {t(lang, "follow_up_saved")}
-          </span>
-        )}
-      </div>
-    </section>
+    </div>
   );
 }

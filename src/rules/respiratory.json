@@ -9,10 +9,10 @@
     "conditions": [{ "field": "spo2", "operator": "<", "value": 90 }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent oxygen evaluation and referral",
-    "reasoning": ["Dangerously low oxygen saturation detected"],
-    "warning_signs": ["Severe respiratory compromise"],
-    "explanation_template": "The patient's oxygen level is dangerously low."
+    "recommended_action": "Urgent oxygen supplementation and emergency referral — dangerously low oxygen saturation",
+    "reasoning": ["Critically low oxygen saturation (SpO₂ < 90%) — severe hypoxia"],
+    "warning_signs": ["SpO₂ below 90% indicates severe hypoxia. Brain and organ damage can occur rapidly. Immediate oxygen and hospital transfer required."],
+    "explanation_template": "The patient's oxygen saturation is critically low (below 90%). This indicates severe hypoxia requiring immediate oxygen supplementation and emergency hospital transfer."
   },
   {
     "rule_id": "RESP_002",
@@ -24,10 +24,10 @@
     "conditions": [{ "field": "breathlessness", "operator": "==", "value": "severe" }],
     "trigger_logic": "ALL",
     "urgency": "Immediate",
-    "recommended_action": "Urgent respiratory referral",
-    "reasoning": ["Severe breathlessness detected"],
-    "warning_signs": ["Respiratory distress"],
-    "explanation_template": "The patient has severe difficulty breathing requiring urgent care."
+    "recommended_action": "Urgent respiratory emergency referral — severe breathing difficulty",
+    "reasoning": ["Severe breathlessness detected — acute respiratory emergency"],
+    "warning_signs": ["Severe difficulty breathing indicates respiratory failure risk. Immediate emergency referral required."],
+    "explanation_template": "The patient has severe difficulty breathing — an acute respiratory emergency. Arrange immediate hospital transfer and ensure patient is positioned upright if possible."
   },
   {
     "rule_id": "RESP_003",
@@ -39,10 +39,10 @@
     "conditions": [{ "field": "spo2", "operator": "between", "value": [90, 94] }],
     "trigger_logic": "ALL",
     "urgency": "Within 24 hours",
-    "recommended_action": "Medical evaluation recommended",
-    "reasoning": ["Moderately reduced oxygen saturation detected"],
-    "warning_signs": ["Possible respiratory compromise"],
-    "explanation_template": "The oxygen level is below the normal safe range."
+    "recommended_action": "Medical evaluation recommended — reduced oxygen saturation requires assessment",
+    "reasoning": ["Moderately reduced oxygen saturation (SpO₂ 90–94%) — possible respiratory compromise"],
+    "warning_signs": ["Oxygen saturation in the 90–94% range is below normal. Monitor closely and seek medical evaluation."],
+    "explanation_template": "The patient's oxygen saturation is below the normal safe range (90–94%). Medical evaluation is recommended to determine the cause."
   },
   {
     "rule_id": "RESP_004",
@@ -54,9 +54,87 @@
     "conditions": [{ "field": "chest_indrawing", "operator": "==", "value": true }],
     "trigger_logic": "ALL",
     "urgency": "Urgent",
-    "recommended_action": "Urgent pediatric respiratory evaluation",
-    "reasoning": ["Chest indrawing detected"],
-    "warning_signs": ["Respiratory distress in child"],
-    "explanation_template": "Chest indrawing may indicate severe breathing difficulty."
+    "recommended_action": "Urgent pediatric respiratory evaluation — chest indrawing is a WHO danger sign in children",
+    "reasoning": ["Chest indrawing detected in child — WHO IMCI respiratory danger sign"],
+    "warning_signs": ["Chest indrawing (subcostal recession) in children is a WHO IMCI sign of severe pneumonia or respiratory distress requiring urgent evaluation"],
+    "explanation_template": "Chest indrawing in a child is a WHO IMCI danger sign indicating possible severe pneumonia or significant respiratory distress. Urgent evaluation is required."
+  },
+  {
+    "rule_id": "RESP_005",
+    "module": "respiratory",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "breathlessness", "operator": "==", "value": "moderate" }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended for moderate breathing difficulty",
+    "reasoning": ["Moderate breathlessness reported — possible respiratory condition requiring evaluation"],
+    "warning_signs": ["If breathlessness worsens, oxygen drops, or new symptoms appear, seek care immediately"],
+    "explanation_template": "Moderate breathing difficulty may indicate an underlying respiratory condition. Medical evaluation is recommended."
+  },
+  {
+    "rule_id": "RESP_006",
+    "module": "respiratory",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "breathlessness", "operator": "==", "value": "mild" },
+      { "field": "spo2", "operator": "between", "value": [90, 94] }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — mild breathlessness with reduced oxygen requires assessment",
+    "reasoning": ["Mild breathlessness combined with reduced oxygen saturation — combined respiratory concern"],
+    "warning_signs": ["Even mild breathlessness alongside reduced oxygen saturation suggests a clinically significant respiratory issue"],
+    "explanation_template": "Mild breathlessness alongside reduced oxygen levels (90–94%) is a clinically meaningful combination requiring medical evaluation."
+  },
+  {
+    "rule_id": "RESP_007",
+    "module": "respiratory",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "respiratory_rate", "operator": ">", "value": 30 }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent emergency referral — respiratory rate above 30/min indicates severe respiratory distress",
+    "reasoning": ["Severely elevated respiratory rate (>30/min) — acute respiratory emergency"],
+    "warning_signs": ["A breathing rate above 30 per minute is a sign of severe respiratory distress or sepsis. Immediate evaluation required."],
+    "explanation_template": "The patient's breathing rate is critically elevated (more than 30 breaths per minute). This indicates severe respiratory distress and requires immediate emergency hospital evaluation."
+  },
+  {
+    "rule_id": "RESP_008",
+    "module": "respiratory",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "single_condition",
+    "patient_category": ["universal"],
+    "conditions": [{ "field": "respiratory_rate", "operator": "between", "value": [25, 30] }],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — elevated respiratory rate suggests respiratory compromise",
+    "reasoning": ["Elevated respiratory rate (25–30/min) — possible respiratory compromise"],
+    "warning_signs": ["A breathing rate of 25–30 per minute is elevated and may indicate infection, respiratory disease, or other systemic illness"],
+    "explanation_template": "The patient's breathing rate is above normal (25–30 breaths per minute). This may indicate a respiratory infection, early respiratory distress, or other systemic illness requiring evaluation."
+  },
+  {
+    "rule_id": "RESP_009",
+    "module": "respiratory",
+    "priority": 1,
+    "severity": "Emergency",
+    "rule_type": "override_rule",
+    "patient_category": ["pediatric"],
+    "conditions": [{ "field": "respiratory_rate", "operator": ">", "value": 60 }],
+    "trigger_logic": "ALL",
+    "urgency": "Immediate",
+    "recommended_action": "Urgent pediatric emergency referral — respiratory rate above 60/min in a child is a WHO severe pneumonia criterion",
+    "reasoning": ["Critically elevated respiratory rate (>60/min) in child — WHO severe pneumonia / respiratory emergency"],
+    "warning_signs": ["Breathing rate above 60/min in a child meets WHO criteria for very severe pneumonia — immediate hospital transfer required"],
+    "explanation_template": "The child's breathing rate is critically elevated (above 60 breaths per minute) — a WHO IMCI criterion for very severe pneumonia or severe respiratory distress. Immediate emergency hospital transfer is required."
   }
 ]

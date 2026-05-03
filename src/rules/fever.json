@@ -46,5 +46,42 @@
     "reasoning": ["Persistent fever detected"],
     "warning_signs": ["Ongoing infection risk"],
     "explanation_template": "Persistent fever may require further medical evaluation."
+  },
+  {
+    "rule_id": "FEVER_004",
+    "module": "fever",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "temperature", "operator": ">=", "value": 38.5 },
+      { "field": "vomiting_everything", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — fever with vomiting increases dehydration risk",
+    "reasoning": ["Fever combined with persistent vomiting detected"],
+    "warning_signs": ["Dehydration risk", "Possible gastrointestinal infection"],
+    "explanation_template": "Fever combined with vomiting increases the risk of dehydration and requires medical evaluation."
+  },
+  {
+    "rule_id": "FEVER_005",
+    "module": "fever",
+    "priority": 2,
+    "severity": "PHC Referral",
+    "rule_type": "combination_rule",
+    "patient_category": ["universal"],
+    "conditions": [
+      { "field": "temperature", "operator": ">=", "value": 38.5 },
+      { "field": "unable_to_drink", "operator": "==", "value": true }
+    ],
+    "trigger_logic": "ALL",
+    "urgency": "Within 24 hours",
+    "recommended_action": "Medical evaluation recommended — fever with inability to drink",
+    "reasoning": ["Fever combined with inability to drink detected"],
+    "warning_signs": ["Dehydration risk"],
+    "explanation_template": "Fever combined with inability to drink significantly increases dehydration risk and requires prompt evaluation."
   }
 ]
+

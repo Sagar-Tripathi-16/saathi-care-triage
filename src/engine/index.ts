@@ -31,50 +31,69 @@ export function runTriage(rawInput: PatientInput): EngineOutput {
   const all = loadAllRules();
   const candidates = all.filter((r) => r.patient_category.some((pc) => applicable.has(pc)));
 
-  // 5. Sort by priority (1 = highest)
-  candidates.sort((a, b) => a.priority - b.priority);
+  // 5. Sort by priority (1 = highest), then by severity level descending within same priority
+  candidates.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return SEVERITY_LEVEL[b.severity] - SEVERITY_LEVEL[a.severity];
+  });
 
-  // 6. Override pass
+  // 6. Override pass — find all matching override rules
   const overrides = candidates.filter((r) => r.rule_type === "override_rule");
-  const triggered: Rule[] = [];
-  let overrideHit = false;
+  const triggeredOverrides: Rule[] = [];
   for (const r of overrides) {
     if (ruleMatches(r, input)) {
-      triggered.push(r);
-      overrideHit = true;
+      triggeredOverrides.push(r);
     }
   }
+  const overrideHit = triggeredOverrides.length > 0;
 
-  // 7. If override hit Emergency, we still gather other override matches but skip non-overrides (per spec: stop lower-priority)
-  if (!overrideHit) {
-    for (const r of candidates) {
-      if (r.rule_type === "override_rule") continue;
-      if (ruleMatches(r, input)) triggered.push(r);
-    }
+  // 7. Non-override pass — always collect ALL matching non-override rules.
+  //    When an override has fired:
+  //    - Overrides set the AUTHORITY severity (non-overrides cannot reduce it)
+  //    - Non-overrides still contribute their reasoning and warning_signs for explainability
+  //    This is the critical fix: previously, non-overrides were silently dropped when an
+  //    override fired, causing the Intelligence Rail to miss key clinical drivers.
+  const triggeredNonOverrides: Rule[] = [];
+  for (const r of candidates) {
+    if (r.rule_type === "override_rule") continue;
+    if (ruleMatches(r, input)) triggeredNonOverrides.push(r);
   }
 
-  // 8. Resolve severity
+  // 8. Combine: overrides first (highest authority), then supporting non-overrides
+  const triggered: Rule[] = [...triggeredOverrides, ...triggeredNonOverrides];
+
+  // 9. Resolve severity
+  //    If override(s) fired: severity is the highest override severity — non-overrides cannot lower it.
+  //    If no override fired: severity is the highest among all matching non-override rules.
   let severity: Severity = "Home Care";
-  for (const r of triggered) severity = highest(severity, r.severity);
+  if (overrideHit) {
+    for (const r of triggeredOverrides) severity = highest(severity, r.severity);
+  } else {
+    for (const r of triggeredNonOverrides) severity = highest(severity, r.severity);
+  }
 
-  // 9. Pick best urgency / action from highest-severity rule (first one with that severity)
-  const top = triggered.find((r) => r.severity === severity);
+  // 10. Pick urgency / action from the highest-severity triggered rule
+  //     Prefer overrides if they match the final severity; otherwise fall through to non-overrides
+  const top =
+    triggeredOverrides.find((r) => r.severity === severity) ??
+    triggeredNonOverrides.find((r) => r.severity === severity);
   const urgency = top?.urgency ?? "Routine";
-  const recommended_action = top?.recommended_action ?? "Monitor at home and re-assess if symptoms change.";
+  const recommended_action = top?.recommended_action ?? "Continuity monitoring advised. Reassess if new or worsening indicators emerge.";
 
-  // 10. Explainability
+  // 11. Build explainability from ALL triggered rules (overrides + non-overrides)
+  //     Sorted: higher-severity rules surface their reasoning first
   const explain = buildExplanation(triggered);
 
-  // 11. If no rules triggered (Home Care), still build a baseline explanation
+  // 12. If no rules triggered (Home Care), build a baseline explanation
   if (triggered.length === 0) {
-    explain.reasoning = ["No danger signs detected based on the information provided."];
+    explain.reasoning = ["No escalation indicators detected based on current clinical inputs."];
     explain.warning_signs = [
-      "Re-assess if symptoms worsen, fever rises, breathing becomes difficult, or new danger signs appear.",
+      "Initiate continuity monitoring. Reassess if fever rises, breathing worsens, or new danger signs appear.",
     ];
-    explain.explanations = ["Patient appears stable based on current inputs. Continue routine home care."];
+    explain.explanations = ["Low escalation probability. Patient appears stable. Routine continuity monitoring advised."];
   }
 
-  const overrideMatches = triggered.filter((r) => r.rule_type === "override_rule");
+  const overrideMatches = triggeredOverrides;
   const result: TriageResult = {
     triage: severity,
     severity_level: SEVERITY_LEVEL[severity],

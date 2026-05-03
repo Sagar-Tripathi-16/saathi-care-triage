@@ -4,8 +4,11 @@ import type { AssessmentRecord, HighRiskPregnancyFlag } from "@/storage/db";
 const HIGH_RISK_SYMPTOMS: Record<string, string> = {
   heavy_bleeding: "risk_heavy_bleeding",
   severe_headache: "risk_severe_headache",
+  headache_severe: "risk_severe_headache",    // graded chip variant stored in symptoms[]
+  headache_persistent: "risk_headache",       // persistent headache during pregnancy
   blurred_vision: "risk_blurred_vision",
   severe_weakness: "risk_severe_weakness",
+  weakness_severe: "risk_severe_weakness",    // graded chip variant stored in symptoms[]
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
